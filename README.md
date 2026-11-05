@@ -247,10 +247,49 @@ Avoid creating one massive pull request at the end of the project. Smaller, focu
 3. Set the **base branch** to `main`.
 4. Set the **compare branch** to your feature branch.
 5. Provide a descriptive title and summary of your changes.
-6. Assign another team member as a reviewer.
-7. Select **Create pull request**.
+6. **Reference the related GitHub Issue** in the PR description using `Closes #<issue-number>`.
+7. Assign at least one other team member as a reviewer.
+8. Select **Create pull request**.
 
-Pull request descriptions should briefly explain what changed, why it changed, and how it was tested.
+#### Pull Request Description Template
+
+Use the following format when creating a PR:
+
+```markdown
+## Summary
+Briefly describe what was implemented or changed.
+
+## Related Issue
+Closes #123
+
+## Changes Made
+- Describe the primary changes.
+- List any new files or functionality.
+- Note any changes to existing behavior.
+
+## Testing
+- [ ] Code runs successfully.
+- [ ] Relevant tests pass.
+- [ ] No existing functionality is broken.
+
+## Additional Notes
+Include any relevant considerations, limitations, or follow-up work.
+```
+
+Replace `#123` with the actual GitHub Issue number.
+
+**Important:** Using `Closes #123`, `Fixes #123`, or `Resolves #123` in a PR description automatically closes the referenced issue when the PR is merged into `main`.
+
+For work that only partially addresses an issue, use `Refs #123` instead. This links the PR to the issue without automatically closing it.
+
+#### Pull Request Guidelines
+
+- Every PR should reference at least one related GitHub Issue.
+- Keep PRs focused on a single issue or closely related changes.
+- Use Draft PRs for incomplete work that needs early feedback.
+- Ensure the issue's acceptance criteria are satisfied before requesting approval.
+- Do not manually close an issue until its required work is complete.
+- If a PR completes multiple issues, reference each one separately using its actual issue number.
 
 ### 5. Review and Merge
 
