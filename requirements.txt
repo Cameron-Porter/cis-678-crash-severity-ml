@@ -1,0 +1,25 @@
+# Recommended Python version: 3.13 (all packages below install there).
+# On Python 3.15+, JupyterLab/Notebook are skipped automatically (one of their dependencies
+# has no Windows build for 3.15 yet); use VS Code's notebook support via ipykernel instead.
+# Versions are pinned to a set tested together on 2026-11-13.
+
+# Data handling
+pandas==3.1.1
+numpy==2.5.4
+pyarrow==26.0.1          # Parquet files in data/processed/
+
+# Modeling
+scikit-learn==1.9.1      # majority baseline, logistic regression, random forest, preprocessing, metrics
+xgboost==3.4.1
+
+# Evaluation & visualization
+matplotlib==3.11.2
+seaborn==0.13.2
+
+# Notebooks
+jupyterlab==4.6.6; python_version < "3.15"
+notebook==7.6.5; python_version < "3.15"
+ipykernel==7.4.0         # notebook kernel; also enables notebooks inside VS Code
+
+# Testing
+pytest==9.2.0
