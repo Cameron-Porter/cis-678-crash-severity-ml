@@ -35,17 +35,83 @@ https://static.nhtsa.gov/nhtsa/downloads/CRSS/<YEAR>/CRSS<YEAR>CSV.zip
 
 Crash counts (rows in `accident.csv`): 2020: 54,745 · 2021: 54,200 · 2022: 53,955 · 2023: 50,103 · 2024: 51,658.
 
-## Re-downloading
+## Downloading the data
 
-From the repository root (Git Bash / macOS / Linux):
+From the **repository root**, paste the entire command for your operating system.
+Python 3 is required; no additional packages are needed. Each command downloads
+2020–2024, creates the year folders, and extracts CSV files directly into them.
+
+### macOS (Terminal)
 
 ```bash
-for y in 2020 2021 2022 2023 2024; do
-  curl -sSfL -o "data/raw/CRSS${y}CSV.zip" "https://static.nhtsa.gov/nhtsa/downloads/CRSS/$y/CRSS${y}CSV.zip"
-  unzip -q -o -j "data/raw/CRSS${y}CSV.zip" -d "data/raw/$y" && rm "data/raw/CRSS${y}CSV.zip"
-done
+python3 -c '
+from pathlib import Path
+from urllib.request import urlretrieve
+from zipfile import ZipFile
+import shutil
+
+assert Path("data/README.md").is_file(), "Run from the repository root."
+for year in range(2020, 2025):
+    folder = Path("data/raw") / str(year)
+    folder.mkdir(parents=True, exist_ok=True)
+    archive = folder / f"CRSS{year}CSV.zip"
+    print(f"Downloading {year}...", flush=True)
+    urlretrieve(f"https://static.nhtsa.gov/nhtsa/downloads/CRSS/{year}/CRSS{year}CSV.zip", archive)
+    with ZipFile(archive) as zipped:
+        for entry in zipped.infolist():
+            name = Path(entry.filename).name.lower()
+            if not entry.is_dir() and name.endswith(".csv"):
+                with zipped.open(entry) as source, (folder / name).open("wb") as target:
+                    shutil.copyfileobj(source, target)
+    for name in ("accident.csv", "vehicle.csv", "person.csv"):
+        if not (folder / name).is_file():
+            raise FileNotFoundError(folder / name)
+    archive.unlink()
+    print(f"Ready: {folder}", flush=True)
+'
 ```
 
-Note: the 2020 archive names one file `vpicTrailerDecode.csv`; it was renamed to lowercase `vpictrailerdecode.csv` to match the other years. Read files with an explicit encoding (e.g. `encoding="latin-1"`) if pandas reports decode errors.
+### Windows (PowerShell)
 
-Total size is about 3.4 GB uncompressed.
+```powershell
+@'
+from pathlib import Path
+from urllib.request import urlretrieve
+from zipfile import ZipFile
+import shutil
+
+assert Path("data/README.md").is_file(), "Run from the repository root."
+for year in range(2020, 2025):
+    folder = Path("data/raw") / str(year)
+    folder.mkdir(parents=True, exist_ok=True)
+    archive = folder / f"CRSS{year}CSV.zip"
+    print(f"Downloading {year}...", flush=True)
+    urlretrieve(f"https://static.nhtsa.gov/nhtsa/downloads/CRSS/{year}/CRSS{year}CSV.zip", archive)
+    with ZipFile(archive) as zipped:
+        for entry in zipped.infolist():
+            name = Path(entry.filename).name.lower()
+            if not entry.is_dir() and name.endswith(".csv"):
+                with zipped.open(entry) as source, (folder / name).open("wb") as target:
+                    shutil.copyfileobj(source, target)
+    for name in ("accident.csv", "vehicle.csv", "person.csv"):
+        if not (folder / name).is_file():
+            raise FileNotFoundError(folder / name)
+    archive.unlink()
+    print(f"Ready: {folder}", flush=True)
+'@ | python -
+```
+
+Both commands normalize filenames to lowercase, including the 2020 archive's
+`vpicTrailerDecode.csv`. Read files with an explicit encoding
+(e.g. `encoding="latin-1"`) if pandas reports decode errors.
+
+## Running preprocessing
+
+Open [`notebooks/Data Preprocessing.ipynb`](../notebooks/Data%20Preprocessing.ipynb)
+and run the cells in order. The working directory must be the repository's
+`notebooks/` directory. Running from the repository root is not supported;
+the setup cell raises an error if the working directory is incorrect.
+
+The notebook reads `accident.csv`, `vehicle.csv`, and `person.csv` from
+`data/raw/<YEAR>/` for 2020–2024. It writes `train.csv`, `validation.csv`, and
+`test.csv` to `data/processed/`. No personal download paths need to be edited.
