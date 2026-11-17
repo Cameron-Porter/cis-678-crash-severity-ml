@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 from src.data.joins import CRASH_KEY, audit_raw_joins, check_keys, merge_crash_summary
+from src.data.load import read_raw_csv
 
 
 def classify_crashes(accident, vehicle, person):
@@ -123,8 +124,8 @@ def main():
     tables = {}
     for table, usecols in columns.items():
         tables[table] = pd.concat([
-            pd.read_csv(root / "data" / "raw" / str(year) / f"{table}.csv",
-                        encoding="latin-1", usecols=usecols).assign(YEAR_FILE=year)
+            read_raw_csv(root / "data" / "raw" / str(year) / f"{table}.csv",
+                         usecols=usecols).assign(YEAR_FILE=year)
             for year in (2020, 2021, 2022)
         ], ignore_index=True)
     labels = classify_crashes(**tables)

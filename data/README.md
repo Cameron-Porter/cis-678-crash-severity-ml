@@ -42,7 +42,7 @@ even if NHTSA later updates the downloads.
 CSV files do not specify data types. Use IDs as keys, code fields as categories,
 `*NAME` fields as text labels, and `WEIGHT` as a survey weight. A numeric code
 does not make a field a numeric measurement. The NHTSA manuals below explain
-the fields and codes. We will review missing codes and consistency in DATA-04.
+the fields and codes. See [missing values and coding consistency](#missing-values-and-coding-consistency) for the audit and handling rules.
 
 The download includes the supplementary tables bundled in each main CSV archive:
 
@@ -90,8 +90,7 @@ lists changes in the other tables.
 Accident column names stay the same across all five years. Load columns by name,
 not position. The notebook makes column names uppercase before combining years,
 so `V_Config` and `V_CONFIG` match. A missing column does not mean its values
-were zero. We still need to check whether codes changed, even when column names
-stayed the same (DATA-04).
+were zero. Code meanings can change even when column names stay the same; the audit below checks both.
 
 ## Source
 
@@ -197,6 +196,86 @@ from the repository root to regenerate that report and the
 [target comparison](../docs/crss_target_comparison.csv), without reading holdout years.
 The comparison checks the combined labels against injury-only labels on the
 same training crashes.
+
+## Missing values and coding consistency
+
+Run `python -m src.data.audit_codes` from the repository root (`python3` on
+macOS). This reads our local accident, vehicle, and person files for 2020-2024
+and writes four reports. It leaves raw and processed data unchanged.
+Supplementary tables need the same review before we use them as features.
+
+| Report | What it shows |
+|---|---|
+| [Missingness](../docs/crss_missingness.csv) | Blank cells, literal `None` labels, coded missingness flags, and absent columns by year and field. |
+| [Special codes](../docs/crss_special_codes.csv) | Observed codes whose labels mention unknown, not reported, or not applicable, with counts. |
+| [Coding changes](../docs/crss_coding_changes.csv) | Different labels for a code, conflicting labels within a year, and categories not observed every year. |
+| [Validation checks](../docs/crss_code_checks.csv) | Codes without labels and values outside the six reviewed field definitions. |
+
+These are compatibility checks across years. Do not use validation or test
+frequencies to choose features, missingness cutoffs, or preprocessing settings.
+Fit any imputer or encoder on training data only.
+
+### Findings and rules
+
+The work-zone labels were being read incorrectly. `WRK_ZONE = 0` has the valid
+label `None`, which pandas normally treats as missing. The shared reader now
+preserves that text, so the notebook no longer fills those labels manually.
+There are no blank `WRK_ZONENAME` cells in any of the five raw files.
+
+Only empty CSV cells become null when loading. The audit also counts whitespace-only
+cells as blank. Coded unknowns remain visible in the raw codes. Do not replace
+8, 9, 98, or 99 globally, and do not fill unknowns with zero. For example,
+`WEATHER = 8` means Other, while `LGT_COND = 8` means Not Reported. Work-zone
+code 4 means a work zone of unknown type; it still establishes a work zone.
+These field definitions come from the [CRSS 2016-2022 manual](https://rosap.ntl.bts.gov/view/dot/78235/dot_78235_DS1.pdf),
+printed pages 56-58.
+
+Towing and damage also change by year. The notebook checks these allowed codes
+before assigning labels:
+
+| Field | 2020-2021 | 2022-2024 |
+|---|---|---|
+| `TOWED` | 2, 3, 5, 7, 8, 9 | 5, 6, 8, 9 |
+| `DEFORMED` | 0, 2, 4, 6, 8, 9 | 0, 2, 4, 6, 7, 8, 9 |
+
+Towing code 6 replaces the earlier towing categories in 2022. Damage code 7
+is added for damage of unknown severity. Keep the existing severity rules;
+these checks establish which source codes are allowed in each year. See the
+[CRSS 2016-2024 manual](https://rosap.ntl.bts.gov/view/dot/89796/dot_89796_DS1.pdf),
+printed pages 138-139. The manual also documents the 2022 treatment of motorized
+bicycles as nonmotorists, so matching column names alone does not establish
+consistent vehicle or person definitions.
+
+`WRK_ZONE`, `LGT_COND`, `WEATHER`, `TOWED`, `DEFORMED`, and `INJ_SEV` have
+explicit allowed-code checks. All five years pass. Missing reviewed fields,
+unreviewed years, or invalid codes stop notebook loading. The audit writes its
+reports before raising for invalid codes. All observed nonblank codes with a
+paired `NAME` column have labels, and none has conflicting labels within a year.
+Other fields still need a manual definition review before feature selection;
+a matching label is not proof that a code has the same meaning across years.
+
+Keep these distinctions when preparing features:
+
+- Blank, unknown, not reported, and not applicable are separate conditions.
+  Decide how to encode each for the specific field after reviewing its manual.
+  Preserve partially known information rather than turning it into a blanket null.
+- An absent column is structural absence. The report marks `column_present=False`
+  and leaves missingness measures empty. For example, person `DEVMOTOR` and
+  `DEVTYPE` first appear in 2022. Do not interpret earlier absence as zero.
+- Column names are normalized to uppercase, and collisions stop loading.
+  This handles `V_Config` versus `V_CONFIG` without changing its values.
+- Do not impute IDs or target outcomes. Keep unresolved severity as `unknown`
+  and use the exclusion rules in the severity section below.
+
+The special-code flags are based on label wording, not a complete codebook
+mapping. `partly_unknown` flags other labels containing "unknown" for review;
+it does not guarantee that useful information remains. Empty coded-missingness
+measures mean no paired label column was available, not zero missingness.
+A changed label may be a wording change. A code missing in a year may simply
+not occur in that sample. The coding report omits absence-only flags for VINs,
+trailer VINs, driver ZIP codes, and motor-carrier IDs; their changing membership
+is expected. It still reports changed labels for those fields. No automatic
+recoding or category merging is based on these flags.
 
 ## Crash-level joins
 
