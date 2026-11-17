@@ -70,8 +70,9 @@ python src/data/document_raw.py
 
 On macOS, use `python3` in place of `python`. The script checks that all 28 tables
 are present for each year and that each row has the expected number of columns.
-It leaves the data unchanged. We will check duplicate keys and join coverage
-in DATA-02.
+It leaves the data unchanged. The notebook checks duplicate keys and join
+coverage separately; see [crash-level joins](../docs/crss_joins.md) and the
+[join report](../docs/crss_join_audit.csv).
 
 ### Changes by year
 

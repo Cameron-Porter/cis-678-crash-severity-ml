@@ -1,0 +1,6 @@
+year,accident_rows,vehicle_rows,person_rows,crashes_with_vehicles,crashes_without_vehicles,crashes_with_people,crashes_without_people,people_with_vehicle_no_zero,people_without_matching_vehicle,joined_crash_rows
+2020,54745,94718,131962,54745,0,54726,19,5077,425,54745
+2021,54200,95785,133734,54200,0,54187,13,5029,390,54200
+2022,53955,94756,132175,53955,0,53934,21,5220,513,53955
+2023,50103,87461,122388,50103,0,50092,11,5381,410,50103
+2024,51658,90641,126159,51658,0,51641,17,5249,418,51658
