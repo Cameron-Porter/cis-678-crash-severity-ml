@@ -1,0 +1,72 @@
+column,dtype,source,role,handling
+CASENUM,int64,accident,key,Combine YEAR_FILE and CASENUM; never a predictor
+REGION,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+REGIONNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+PSU,int64,accident,metadata,Survey or year metadata; not a predictor
+PJ,int64,accident,metadata,Survey or year metadata; not a predictor
+PSU_VAR,int64,accident,metadata,Survey or year metadata; not a predictor
+URBANICITY,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+URBANICITYNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+VE_TOTAL,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+VE_FORMS,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+PVH_INVL,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+PEDS,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+PERMVIT,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+PERNOTMVIT,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+MONTH,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+MONTHNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+YEAR,int64,accident,metadata,Survey or year metadata; not a predictor
+YEARNAME,int64,accident,metadata,Survey or year metadata; not a predictor
+DAY_WEEK,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+DAY_WEEKNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+HOUR,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+HOURNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+MINUTE,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+MINUTENAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+HARM_EV,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+HARM_EVNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+ALCOHOL,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+ALCOHOLNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+MAN_COLL,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+MAN_COLLNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+RELJCT1,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+RELJCT1NAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+RELJCT2,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+RELJCT2NAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+TYP_INT,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+TYP_INTNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+WRK_ZONE,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+WRK_ZONENAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+REL_ROAD,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+REL_ROADNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+LGT_COND,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+LGT_CONDNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+SCH_BUS,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+SCH_BUSNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+INT_HWY,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+INT_HWYNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+WEATHER,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+WEATHERNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+WKDY_IM,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+WKDY_IMNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+HOUR_IM,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+HOUR_IMNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+MINUTE_IM,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+MINUTE_IMNAME,int64,accident,code_label,Text label for corresponding code; preserve literal None
+EVENT1_IM,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+EVENT1_IMNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+MANCOL_IM,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+MANCOL_IMNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+RELJCT1_IM,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+RELJCT1_IMNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+RELJCT2_IM,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+RELJCT2_IMNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+LGTCON_IM,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+LGTCON_IMNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+WEATHR_IM,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+WEATHR_IMNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+ALCHL_IM,int64,accident,pending_review,Retained source field; availability and leakage review required before modeling
+ALCHL_IMNAME,string,accident,code_label,Text label for corresponding code; preserve literal None
+WEIGHT,float64,accident,sample_weight,Use only if the analysis calls for survey weighting
+YEAR_FILE,int64,derived,key,Combine YEAR_FILE and CASENUM; never a predictor
+SEVERITY,string,derived,target,low/moderate/high/unknown; exclude unknown for modeling

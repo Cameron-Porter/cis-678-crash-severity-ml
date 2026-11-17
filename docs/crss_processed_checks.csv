@@ -1,0 +1,4 @@
+split,years,rows,columns,integrity
+train,2020;2021;2022,162900,71,passed
+validation,2023,50103,71,passed
+test,2024,51658,71,passed

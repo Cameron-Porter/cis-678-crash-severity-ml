@@ -197,6 +197,83 @@ from the repository root to regenerate that report and the
 The comparison checks the combined labels against injury-only labels on the
 same training crashes.
 
+### Rebuilding the datasets
+
+After downloading the raw files, run from the repository root:
+
+```bash
+cd notebooks
+python build_data.py
+```
+
+On macOS, use `python3 build_data.py`. Both this command and the notebook must
+run from `notebooks/`. They call the same preparation code in
+`src/data/preprocess.py`, so there is one set of loading, labeling, and splitting
+rules. The notebook calls these functions in separate cells for loading, join
+checks, severity labels, crash preparation, splits, and saving. This lets us
+inspect each stage before moving on. `build_data.py` runs the same steps in order.
+The final notebook step and the command replace the three local processed CSVs
+after validation.
+No model is trained and no imputer, encoder, or feature selection is fitted.
+
+| Output | Years | Rows |
+|---|---|---:|
+| `data/processed/train.csv` | 2020-2022 | 162,900 |
+| `data/processed/validation.csv` | 2023 | 50,103 |
+| `data/processed/test.csv` | 2024 | 51,658 |
+
+Each file has 71 columns and one row per crash, sorted by `YEAR_FILE` and
+`CASENUM`. Together the three files contain the complete prepared crash table;
+we do not save another combined copy. The files retain `unknown` outcomes.
+The [processed schema](../docs/crss_processed_schema.csv) lists every column in
+output order, its storage type, source, role, and handling rule. Source field
+names also appear in the [raw schema](../docs/crss_schema.md); use the manuals
+for their definitions. Numeric storage does not make a code a continuous feature.
+
+These are prepared data tables, not an approved model input matrix. Vehicle
+and person records supply the severity label; their individual fields are not
+added as predictors in this build. Known injury-summary fields are removed,
+but retained crash fields such as `HARM_EV`, `ALCOHOL`, and NHTSA-imputed fields
+still require the predictor availability and leakage review. Do not feed every
+remaining column into a model. IDs, survey metadata, code labels, and the target
+also have separate roles in the schema.
+
+### Integrity and reproducibility
+
+The build checks raw keys, parent matches, and the reviewed year-specific codes
+before labeling. It then requires the exact output columns, valid severity
+labels, matching `YEAR` and `YEAR_FILE`, and the specified years in each split.
+It rejects duplicate crash keys, overlap between splits, lost or extra crashes,
+and changed values. It writes temporary CSVs and reloads them to check their
+contents before replacing the existing files. The
+[processed checks](../docs/crss_processed_checks.csv) record the successful split
+sizes without reporting holdout class distributions.
+
+`data/processed/manifest.json` records SHA-256 hashes of all 15 input CSVs,
+preparation source files, and the three outputs, plus Python and pandas versions.
+Inputs are hashed again before publishing the outputs to detect files changed
+during the build. Output order and CSV line endings are fixed. With the same
+inputs, code, and environment, repeated builds should produce matching output
+hashes. Compare the manifests when investigating a difference. Raw data,
+processed CSVs, and the local manifest stay out of git; commit the code and small
+schema/check reports.
+
+When reading these outputs, preserve literal `None` labels and use the schema:
+
+```python
+# From notebooks/, after the setup cell has added the repository to sys.path.
+import pandas as pd
+from src.data.preprocess import read_processed_csv
+
+schema = pd.read_csv("../docs/crss_processed_schema.csv")
+train = read_processed_csv("../data/processed/train.csv", schema)
+```
+
+Run `python -m unittest discover -s tests -v` from the repository root for the
+automated checks. The build also checks the actual downloaded data on every run.
+The DATA-01 inventory and DATA-04 code reports have their own commands above;
+the build updates the join report and training-only severity reports.
+
 ## Missing values and coding consistency
 
 Run `python -m src.data.audit_codes` from the repository root (`python3` on

@@ -151,7 +151,11 @@ Raw datasets should be stored locally under `data/raw/`.
 
 Processed datasets should be stored under `data/processed/`.
 
-Data preparation scripts and any additional download or processing instructions will be documented as development progresses.
+Follow the [data guide](data/README.md) to download the files. Then run
+`python build_data.py` from `notebooks/` (`python3` on macOS) to rebuild and check
+the three processed datasets. The preprocessing notebook uses the same code.
+See the [processed schema](docs/crss_processed_schema.csv) for column roles;
+retained fields still need review before use as predictors.
 
 ## Data Preparation and Model Evaluation
 
