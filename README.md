@@ -8,13 +8,23 @@ This project is being developed as part of CIS 678 at Grand Valley State Univers
 
 Our goal is to investigate how accurately machine learning models can classify the severity of motor vehicle crashes using roadway, environmental, vehicle, and driver-related characteristics.
 
+We predict severity as a category, making this a classification task. The current
+analysis uses completed crash records. It does not yet establish prediction
+before the outcome is known; each predictor's availability needs to be reviewed.
+
 We will classify crashes into three severity categories:
 
 - **Low:** No recorded injuries or significant damage, where sufficient outcome information is available.
 - **Moderate:** Less serious or possible injuries, or qualifying vehicle damage/tow-away outcomes.
 - **High:** Serious or fatal injuries.
 
-The exact classification rules will be finalized and documented during preprocessing.
+The [classification rules](data/README.md#crash-severity-rules) define label precedence and
+missing-outcome handling. Crashes that cannot be labeled stay `unknown` in the
+processed files and are excluded from the three-class model.
+
+We also compare these combined labels with an injury-only definition. The
+[training comparison](data/README.md#training-comparison) shows how the
+choice changes class counts; model comparisons will follow.
 
 We will implement and compare:
 
@@ -141,7 +151,11 @@ Raw datasets should be stored locally under `data/raw/`.
 
 Processed datasets should be stored under `data/processed/`.
 
-Data preparation scripts and any additional download or processing instructions will be documented as development progresses.
+Follow the [data guide](data/README.md) to download the files. Then run
+`python build_data.py` from `notebooks/` (`python3` on macOS) to rebuild and check
+the three processed datasets. The preprocessing notebook uses the same code.
+See the [processed schema](docs/crss_processed_schema.csv) for column roles;
+retained fields still need review before use as predictors.
 
 ## Data Preparation and Model Evaluation
 
@@ -163,6 +177,11 @@ We will compare two feature groups:
 
 - **Core features:** Roadway, environmental, and vehicle-related characteristics.
 - **Expanded features:** Core features plus driver-related characteristics.
+
+Each candidate must pass the [predictor availability review](data/README.md#predictor-availability).
+Record when it becomes available and whether it reveals the outcome. Driver
+findings recorded during an investigation cannot be assumed available for
+earlier prediction. The final feature list is still pending review.
 
 Categorical variables must be encoded appropriately, and missing values handled consistently.
 
