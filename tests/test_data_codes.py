@@ -1,4 +1,3 @@
-"""Check parsing, code-year boundaries, and diagnostic flags."""
 
 import tempfile
 import unittest

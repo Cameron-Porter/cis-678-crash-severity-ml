@@ -1,4 +1,3 @@
-"""Severity boundaries, missing outcomes, and precedence."""
 
 import unittest
 

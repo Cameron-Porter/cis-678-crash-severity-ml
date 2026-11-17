@@ -598,8 +598,9 @@ Before building features, review every candidate field and record:
 | Outcome relationship | Whether it defines the target, reveals the outcome, or may be inferred from the outcome during investigation. |
 | Decision | Include in retrospective analysis, exclude, or leave pending, with a reason. |
 
-This is the review requirement, not a completed field-by-field audit. The final
-predictor list has not been approved. Pending fields stay out until reviewed.
+The BASE-01 review below defines the initial core and expanded feature lists.
+The feature catalog records the decision for each selected input. Fields outside
+those lists remain excluded unless separately reviewed.
 
 ### Rules for the feature review
 
@@ -625,3 +626,95 @@ unresolved availability claim is not enough.
 Use the [NHTSA manuals](README.md#source) for the review. Fit data-driven
 feature choices on training data only. Keep the reviewed predictor set the
 same for the combined and injury-only target comparison.
+
+## Core and expanded feature sets
+
+BASE-01 fixes the initial feature contract for the baseline models. The
+[feature catalog](../docs/crss_feature_sets.csv) gives exact sources, types,
+construction rules, missing-value rules, rationale, and availability limits.
+`src/features/build_features.py` defines the matching ordered allowlists.
+These choices follow the proposal and field definitions, not holdout results.
+The required raw columns were checked in all five years using headers only.
+The selected code and range rules were checked on 2020-2022 inputs without
+reading outcome fields; those checks passed.
+
+| Set | Features |
+|---|---|
+| Core categorical | `MONTH`, `DAY_WEEK`, `HOUR`, `TYP_INT`, `INT_HWY`, `LGT_COND`, `WEATHER` |
+| Core numeric | `VE_TOTAL`, `VEHICLE_AGE_MIN`, `VEHICLE_AGE_MAX` |
+| Expanded additions, categorical | `SPEEDING_ANY`, `DRINKING_ANY` |
+| Expanded additions, numeric | `DRIVER_AGE_MIN`, `DRIVER_AGE_MAX` |
+
+The core set has 10 features. The expanded set has the same 10 plus four driver
+features. Time categories capture travel context; roadway and environmental
+fields describe conditions; vehicle count and age summarize the vehicles involved.
+The driver additions test whether recorded age and behavior add predictive value.
+These are hypotheses to evaluate, not claims that a feature causes severity.
+
+### Availability and interpretation
+
+The proposal calls for conditional severity prediction among reported crashes.
+Our analysis predicts a held-out severity label using completed records. It does
+not establish that these inputs were available before injury or damage occurred.
+Even core fields lack verified availability timestamps, and the full set of
+involved vehicles may only be established after a crash.
+
+Driver age and vehicle model year describe pre-existing attributes, but retrieving
+those records requires identifying the people and vehicles. `SPEEDREL` and
+`DRINKING` reflect police findings. They are admitted only to the retrospective
+expanded comparison. They do not define our target, but investigation intensity,
+testing, and documentation can depend on severity. Better expanded scores may
+therefore reflect information obtained after the outcome. They cannot establish
+better pre-crash prediction, causal effects, or deployment readiness.
+
+This follows the comparison described in the [proposal](../reports/proposal/crss_crash_severity_proposal.pdf).
+Source definitions are in the [2016-2022 manual](https://rosap.ntl.bts.gov/view/dot/78235/dot_78235_DS1.pdf)
+(the catalog lists printed pages) and the [2016-2024 manual](https://rosap.ntl.bts.gov/view/dot/89796/dot_89796_DS1.pdf).
+The latter covers model year on page 92, speeding on page 157, and driver age
+and person type in the Person section. Neither manual establishes availability
+at a live prediction time. An operational model would need that separate review.
+
+### Rules for constructing one row per crash
+
+Group by `YEAR_FILE`, `CASENUM` and left-join summaries to the prepared crash
+table with the existing one-to-one join checks. Keep the same crash population
+for both sets. Missing driver information must not remove a crash from expanded.
+Only the target eligibility rule removes `unknown` outcomes before modeling.
+
+Use vehicle records once each, not repeated copies from person records. Vehicle
+age is `max(0, YEAR_FILE - MOD_YEAR)` after removing missing model-year codes.
+The catalog's 1886 through crash-year-plus-one range is our input validation
+rule, not an NHTSA category boundary. Next-model-year vehicles receive age zero.
+Take minimum and maximum over known values; when none are known, leave missing.
+These summaries cover the vehicle table, not parked/working vehicles. `VE_TOTAL`
+retains its broader source population. Do not present those populations as equal.
+
+For driver age and drinking, select `PER_TYP = 1`; do not assume `PER_NO = 1`
+is the driver. Group driver records directly by crash, including those without
+a matching vehicle key, and retain the join-audit diagnostics. Do not select
+people or vehicles using injury, damage, towing, or label values. Do not substitute
+passenger ages for missing driver ages. Known-value age ranges may be incomplete.
+
+For either behavior flag, observed positive evidence gives 1. Give 0 only for
+a nonempty group whose relevant source values are all explicitly negative.
+Otherwise leave missing. For drinking this describes recorded drivers only;
+a negative flag does not prove an unrecorded driver was alcohol-free. Missing
+records and unknown codes never mean no speeding or no drinking. Neither flag
+asserts impairment, fault, or causation.
+
+### Excluded fields
+
+Selection uses an allowlist. Every unlisted field is excluded, including future
+raw columns. These decisions apply to both target definitions:
+
+| Field or family | Decision and reason |
+|---|---|
+| `SEVERITY`, `INJURY_ONLY_SEVERITY`, reasons, `INJ_SEV`, `MAX_SEV`, `MAX_VSEV`, injury counts, `TOWED`, `DEFORMED` | Exclude labels, target components, and their summaries. |
+| `STRATUM`, `PSUSTRAT` | Exclude sampling strata that can encode outcomes. |
+| `AIR_BAG`, `EJECTION`, `HOSPITAL`, `ROLLOVER`, `FIRE_EXP`, `IMPACT1`, `M_HARM`, `HARM_EV`, `MAN_COLL`, crash/event configurations | Exclude crash consequences and event reconstruction from these baseline sets. |
+| `REL_ROAD`, `RELJCT1`, `RELJCT2`, `WRK_ZONE` | Exclude from this initial contract because their coding references the harmful-event location or crash relationship. |
+| IDs, VINs, ZIP codes, `YEAR`, `YEAR_FILE`, `PSU`, `PJ`, `PSU_VAR`, `REGION`, `URBANICITY` | Keep required keys and metadata separately; exclude geographic/design shortcuts. `YEAR_FILE` is used only for keys, splitting, and age calculation. |
+| `WEIGHT` | Sample-weight metadata, never a predictor; weighting is a separate modeling decision. |
+| All `*NAME` columns and NHTSA-imputed fields (`*_IM`, `WKDY_IM`, etc.) | Exclude duplicate labels and externally imputed values; fit our transformations on training only. |
+| `ALCOHOL`, `VEH_ALCH`, alcohol test status/results, drug fields, violations, restraint/helmet fields, `TRAV_SP`, other driver factors | Not selected. Use only the explicitly reviewed driver summaries; other investigation fields need their own review. |
+| Make/model/body-class codes and other unlisted context fields | Deferred to keep the initial contract small; harmonization and rationale must be reviewed before expansion. |

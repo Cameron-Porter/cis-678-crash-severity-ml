@@ -1,4 +1,3 @@
-"""Check CRSS keys and join crash summaries without changing the crash count."""
 
 import pandas as pd
 

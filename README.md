@@ -181,7 +181,11 @@ We will compare two feature groups:
 Each candidate must pass the [predictor availability review](data/README.md#predictor-availability).
 Record when it becomes available and whether it reveals the outcome. Driver
 findings recorded during an investigation cannot be assumed available for
-earlier prediction. The final feature list is still pending review.
+earlier prediction. The [BASE-01 feature contract](data/README.md#core-and-expanded-feature-sets)
+defines 10 core features and four driver additions, with source and availability
+decisions in the [feature catalog](docs/crss_feature_sets.csv). The expanded
+behavior fields are for retrospective analysis only. Feature construction and
+fitted preprocessing follow in BASE-02.
 
 Categorical variables must be encoded appropriately, and missing values handled consistently.
 
