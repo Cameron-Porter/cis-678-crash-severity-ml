@@ -1,0 +1,5 @@
+accuracy,macro_f1,high_severity_recall,configuration,train_rows,validation_rows,predicted_class,model,iterations,C,class_weight
+0.6488756048961002,0.26235074090058985,0.0,core,142702,42156,moderate,majority,,,
+0.6488756048961002,0.26235074090058985,0.0,expanded,142702,42156,moderate,majority,,,
+0.345834519404118,0.3441676581890549,0.5216603773584906,core,142702,42156,,tuned_logistic_regression,53.0,0.01,balanced
+0.3936568934434007,0.3896378250108284,0.527245283018868,expanded,142702,42156,,tuned_logistic_regression,116.0,1.0,balanced

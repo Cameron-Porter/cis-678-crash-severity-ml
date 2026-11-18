@@ -43,6 +43,7 @@ python build_data.py
 python prepare_features.py
 python run_majority_baseline.py
 python run_logistic_regression.py
+python tune_baselines.py
 ```
 
 Use `python3` on macOS. These commands must run from `notebooks/`. The
@@ -50,6 +51,7 @@ Use `python3` on macOS. These commands must run from `notebooks/`. The
 [feature notebook](notebooks/Feature%20Preprocessing.ipynb), and
 [baseline notebook](notebooks/Majority%20Baseline.ipynb), and
 [Logistic Regression notebook](notebooks/Logistic%20Regression.ipynb) expose the same steps.
+Use [Baseline Tuning](notebooks/Baseline%20Tuning.ipynb) to compare regularization and class weighting.
 Datasets and fitted artifacts stay local; small metric reports are tracked.
 
 ## Modeling rules

@@ -262,7 +262,7 @@ or use [Logistic Regression.ipynb](../notebooks/Logistic%20Regression.ipynb).
 Both configurations reuse training-fitted preprocessing and train on 2020?2022.
 Fixed settings: multinomial loss, `lbfgs`, L2 (`l1_ratio=0`), `C=1`, no class
 weighting, `max_iter=1000`, `tol=1e-4`, and seed 42. Nonconvergence stops the run.
-Regularization and class-weight tuning are reserved for BASE-05.
+Use the tuning workflow below to compare regularization and class weights.
 
 [Validation metrics](../results/logistic_regression/metrics.csv), per-class scores,
 confusion counts, and run settings are saved in `results/logistic_regression/`.
@@ -270,6 +270,26 @@ Predictions, class probabilities, and fitted pipelines stay local in
 `data/processed/predictions/logistic_regression/`. Pipelines accept the crash-level
 feature table from `build_feature_table`, including `YEAR_FILE`, and apply the
 saved preprocessing before prediction. The run does not read 2024 data.
+
+## Baseline tuning
+
+Run `python tune_baselines.py` from `notebooks/`, or use
+[Baseline Tuning.ipynb](../notebooks/Baseline%20Tuning.ipynb).
+The fixed grid is `C=[0.01, 0.1, 1, 10, 100]` with unweighted and balanced classes
+for both feature sets. Balanced weights use training-label frequencies only.
+All other settings and prepared features match the fixed Logistic Regression run.
+
+Select the highest 2023 macro-F1 per feature set and the overall Logistic Regression
+winner. Exact ties favor smaller C, then unweighted, then core. Report accuracy and
+high-severity recall alongside macro-F1; neither breaks ties. Selected models stay
+fitted on 2020?2022, and the workflow does not load or evaluate 2024 data.
+
+[Candidate scores](../results/baseline_tuning/candidates.csv) cover all 20 fits.
+The same folder contains candidate per-class/confusion reports, selected-model
+metrics, the majority-baseline comparison, and search settings in `run.json`.
+Selected pipelines and validation predictions stay local under
+`data/processed/predictions/baseline_tuning/`. These validation scores were used
+for selection; final performance still requires the held-out test evaluation.
 
 ## Reports and checks
 

@@ -1,4 +1,4 @@
-﻿import json
+import json
 import platform
 import warnings
 from pathlib import Path
@@ -20,7 +20,7 @@ PARAMETERS = dict(solver='lbfgs', C=1.0, l1_ratio=0.0, class_weight=None,
                   max_iter=1000, tol=1e-4, random_state=42)
 
 
-def fit_logistic_models(inputs):
+def fit_logistic_models(inputs, *, C=1.0, class_weight=None):
     models = {}
     for configuration, item in inputs.items():
         matrix, rows = item['train']
@@ -31,7 +31,7 @@ def fit_logistic_models(inputs):
             raise ValueError('Training requires all three severity classes and aligned rows')
         if not item['metadata']['scale_numeric']:
             raise ValueError('Logistic Regression requires scaled numeric features')
-        model = LogisticRegression(**PARAMETERS)
+        model = LogisticRegression(**(PARAMETERS | {'C': C, 'class_weight': class_weight}))
         with warnings.catch_warnings():
             warnings.simplefilter('error', ConvergenceWarning)
             model.fit(matrix, rows.SEVERITY)
@@ -60,10 +60,11 @@ def evaluate_logistic_models(inputs, models):
     return results
 
 
-def save_logistic_results(root, inputs, models, results):
+def save_logistic_results(root, inputs, models, results, *, tuned=False):
     root = Path(root)
-    report = root / 'results/logistic_regression'
-    local = root / 'data/processed/predictions/logistic_regression'
+    name = 'baseline_tuning' if tuned else 'logistic_regression'
+    report = root / 'results' / name
+    local = root / 'data/processed/predictions' / name
     pipelines = {}
     for configuration, model in models.items():
         folder = root / 'data/processed/features' / configuration
