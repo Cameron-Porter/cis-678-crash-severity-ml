@@ -291,6 +291,51 @@ Selected pipelines and validation predictions stay local under
 `data/processed/predictions/baseline_tuning/`. These validation scores were used
 for selection; final performance still requires the held-out test evaluation.
 
+## Baseline handoff
+
+After running the majority baseline, fixed Logistic Regression, and tuning,
+run `python export_baselines.py` from `notebooks/`, or use
+[Baseline Handoff.ipynb](../notebooks/Baseline%20Handoff.ipynb).
+Share `data/processed/baseline_handoff.zip` with Payton alongside this repository.
+CSV + JSON is the proposed exchange format; recipient confirmation is still pending.
+The archive and unpacked copy stay local; small summary files are tracked in
+`results/baseline_handoff/`. Rerunning replaces the export without retraining.
+
+| File | Contents |
+|---|---|
+| `predictions.csv` | One row per model and crash: `model_id`, `YEAR_FILE`, `CASENUM`, `y_true`, `y_pred`, `p_low`, `p_moderate`, `p_high`. |
+| `labels.csv` | Label strings and their probability columns. No integer label encoding. |
+| `metrics.csv`, `per_class.csv`, `confusion.csv` | Scores per model, class scores, and actual/predicted confusion counts. |
+| `configurations.json` | Estimator parameters, feature set, exclusions, selection flags, and search rules. |
+| `source_runs.json`, `manifest.json` | Original run metadata and export file hashes. |
+
+Join on `YEAR_FILE` + `CASENUM`; include `model_id` when checking export uniqueness.
+There are six runs: majority, fixed Logistic Regression, and tuned Logistic
+Regression for core and expanded. `baseline_tuning_expanded` is the selected
+Logistic Regression winner. Probabilities follow the named columns, not an
+estimator's internal class order. The majority model assigns probability 1 to
+its constant prediction; these probabilities are not calibrated risk estimates.
+
+All runs use 142,702 training and 42,156 validation crashes after excluding
+20,198 and 7,947 unknown targets, respectively. Target rules and feature
+engineering are defined above and in the [feature catalog](../docs/crss_feature_sets.csv).
+Metrics are unweighted and macro-F1 includes all three labels. The exporter checks
+hashes, aligned crash keys and true labels, probabilities, and recomputed metrics.
+It does not read 2024 data.
+
+| Model | Accuracy | Macro-F1 | High recall |
+|---|---:|---:|---:|
+| Majority, either set | 64.89% | 0.2624 | 0.00% |
+| Fixed Logistic Regression, core | 64.84% | 0.2696 | 1.06% |
+| Fixed Logistic Regression, expanded | 64.84% | 0.2861 | 3.35% |
+| Tuned Logistic Regression, core | 34.58% | 0.3442 | 52.17% |
+| Tuned Logistic Regression, expanded | 39.37% | 0.3896 | 52.72% |
+
+Balanced weights improve macro-F1 and high-severity recall at the cost of accuracy.
+These are primary-target validation results used for model selection. The injury-only
+comparison and final 2024 evaluation remain separate work. Expanded features include
+retrospective driver information, so these results do not establish pre-crash prediction.
+
 ## Reports and checks
 
 Reports describe local raw files unless marked as processed or training-only.

@@ -44,15 +44,14 @@ python prepare_features.py
 python run_majority_baseline.py
 python run_logistic_regression.py
 python tune_baselines.py
+python export_baselines.py
 ```
 
-Use `python3` on macOS. These commands must run from `notebooks/`. The
-[data notebook](notebooks/Data%20Preprocessing.ipynb) and
-[feature notebook](notebooks/Feature%20Preprocessing.ipynb), and
-[baseline notebook](notebooks/Majority%20Baseline.ipynb), and
-[Logistic Regression notebook](notebooks/Logistic%20Regression.ipynb) expose the same steps.
-Use [Baseline Tuning](notebooks/Baseline%20Tuning.ipynb) to compare regularization and class weighting.
-Datasets and fitted artifacts stay local; small metric reports are tracked.
+Use `python3` on macOS. Run these commands from `notebooks/`; the notebooks
+there expose the same steps. Datasets and fitted artifacts stay local.
+The final command creates `data/processed/baseline_handoff.zip` for evaluation.
+See the [handoff format](data/README.md#baseline-handoff) and
+[validation results](results/baseline_handoff/metrics.csv).
 
 ## Modeling rules
 

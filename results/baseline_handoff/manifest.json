@@ -1,0 +1,13 @@
+{
+  "exporter_sha256": "740097f58409ace5946b49384353ed4d1aff54d190b57d9eb52eb1decb53e652",
+  "files": {
+    "configurations.json": "f2e925ae459eae9b941171198f0a2a5ce9a28856edf8071284008fb32ea9938f",
+    "confusion.csv": "ddeac7920fbcea88b9fde880feef42ff10b7d83144829f44e8e91b0104eb97f7",
+    "labels.csv": "57eb6bb019c29f9ae4852d559b76e7fc2bce069be558ee0e92bc7305251a559f",
+    "metrics.csv": "902570a178756d16ce53106b72cf9fcbd1b9503d1103c7cb8725c0abbad51aec",
+    "per_class.csv": "9cc806ba3486607f21c1646b0be4e8180e7bb11c34e1b649e863b22a9e19f153",
+    "predictions.csv": "b482961117dcf6f3c32c2723f11ea005cdbeac91d4b9bee49e2f3d20fb537e19",
+    "source_runs.json": "b56519db57b700900c20ba5abc820d0bfd9071b1a77c804c72b4f402ca744276"
+  },
+  "schema_version": 1
+}
