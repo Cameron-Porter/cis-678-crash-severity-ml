@@ -1,0 +1,7 @@
+label,precision,recall,f1,support,configuration
+low,0.0,0.0,0.0,8177,core
+moderate,0.6488756048961002,1.0,0.7870522227017696,27354,core
+high,0.0,0.0,0.0,6625,core
+low,0.0,0.0,0.0,8177,expanded
+moderate,0.6488756048961002,1.0,0.7870522227017696,27354,expanded
+high,0.0,0.0,0.0,6625,expanded

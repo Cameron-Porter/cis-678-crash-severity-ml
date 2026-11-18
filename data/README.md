@@ -238,6 +238,23 @@ Each folder in `data/processed/features/{core,expanded}/` contains:
 Rerunning replaces these local artifacts. Core and expanded use the same eligible
 rows; their encoded widths may differ. Missing predictors do not remove rows.
 
+## Majority-class baseline
+
+After preparing features, run `python run_majority_baseline.py` from `notebooks/`,
+or use [Majority Baseline.ipynb](../notebooks/Majority%20Baseline.ipynb).
+`DummyClassifier(strategy="most_frequent")` learns the unweighted majority label
+from 2020?2022 and evaluates both feature sets on the same eligible 2023 crashes.
+It does not read the 2024 test set. Ties follow scikit-learn's sorted class order.
+
+[Results](../results/majority_baseline/metrics.csv) include accuracy, macro-F1,
+per-class scores, and confusion counts. Macro-F1 averages low, moderate, and high;
+undefined scores are zero. `run.json` records input/code hashes and exclusions.
+Crash-level predictions stay in `data/processed/predictions/majority_baseline/`.
+Rerunning replaces these outputs.
+
+Both sets predict moderate: validation accuracy is 64.89%, macro-F1 is 0.2624,
+and high-severity recall is 0. This is the minimum benchmark for later models.
+
 ## Reports and checks
 
 Reports describe local raw files unless marked as processed or training-only.

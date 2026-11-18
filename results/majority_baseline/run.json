@@ -1,0 +1,57 @@
+{
+  "evaluation_year": 2023,
+  "exclusions": {
+    "core": {
+      "train": {
+        "eligible_rows": 142702,
+        "excluded_unknown": 20198,
+        "input_rows": 162900
+      },
+      "validation": {
+        "eligible_rows": 42156,
+        "excluded_unknown": 7947,
+        "input_rows": 50103
+      }
+    },
+    "expanded": {
+      "train": {
+        "eligible_rows": 142702,
+        "excluded_unknown": 20198,
+        "input_rows": 162900
+      },
+      "validation": {
+        "eligible_rows": 42156,
+        "excluded_unknown": 7947,
+        "input_rows": 50103
+      }
+    }
+  },
+  "feature_metadata_sha256": {
+    "core": "557b533b7a739efdbb6e4f5833249a238f1f62bbbdeec5b3e1ca3d2d82c1096c",
+    "expanded": "050cd9e961c29608aa7af4c2668ddfa53d47dab64b1877b737bb6d583a48d7d3"
+  },
+  "fit_years": [
+    2020,
+    2021,
+    2022
+  ],
+  "labels": [
+    "low",
+    "moderate",
+    "high"
+  ],
+  "model": "DummyClassifier",
+  "prediction_hashes": {
+    "data/processed/predictions/majority_baseline/core_validation.csv": "76a4aa12a75d7686123348711dad86ff050d137c3422ed5bc88abd4f9cf48798",
+    "data/processed/predictions/majority_baseline/expanded_validation.csv": "76a4aa12a75d7686123348711dad86ff050d137c3422ed5bc88abd4f9cf48798"
+  },
+  "sample_weight": null,
+  "sklearn": "1.9.1",
+  "source_hashes": {
+    "src/evaluation/evaluate.py": "c02e94439b75a1435ba40d90c399e3a17cd1e710f3326b19187479577441de17",
+    "src/models/data.py": "dbd50587005efe55d0f0810623ab874f38bd31d0f126fc8eec69fe132b570706",
+    "src/models/majority_baseline.py": "d42ed5051635c59f7705cd923cb092840773d712a9ce1378d9d4560e677f1aa9"
+  },
+  "strategy": "most_frequent",
+  "zero_division": 0
+}

@@ -41,12 +41,14 @@ python -m pip install -r requirements.txt
 cd notebooks
 python build_data.py
 python prepare_features.py
+python run_majority_baseline.py
 ```
 
-Use `python3` on macOS. Both commands must run from `notebooks/`. The
+Use `python3` on macOS. These commands must run from `notebooks/`. The
 [data notebook](notebooks/Data%20Preprocessing.ipynb) and
-[feature notebook](notebooks/Feature%20Preprocessing.ipynb) expose the same steps
-for interactive inspection. Data and generated artifacts stay local.
+[feature notebook](notebooks/Feature%20Preprocessing.ipynb), and
+[baseline notebook](notebooks/Majority%20Baseline.ipynb) expose the same steps.
+Datasets and fitted artifacts stay local; small metric reports are tracked.
 
 ## Modeling rules
 
