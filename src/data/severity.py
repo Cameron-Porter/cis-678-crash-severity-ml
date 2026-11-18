@@ -1,4 +1,3 @@
-"""Fixed crash severity rules. Review and reporting use 2020–2022 only."""
 
 from pathlib import Path
 

@@ -1,4 +1,3 @@
-"""Read CRSS CSVs without turning valid text categories into missing values."""
 
 import csv
 from pathlib import Path

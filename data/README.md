@@ -1,111 +1,15 @@
 # Data
 
-This folder holds the NHTSA Crash Report Sampling System (CRSS) data used by the project. Data files are **not** committed to git (see `.gitignore`); each team member downloads them locally.
-
-## Layout
-
-```text
-data/
-├── raw/                 # Original CRSS CSV files, one folder per year (unmodified)
-│   ├── 2020/            # Training
-│   ├── 2021/            # Training
-│   ├── 2022/            # Training
-│   ├── 2023/            # Validation
-│   └── 2024/            # Test (do not use for preprocessing/feature/model decisions)
-└── processed/           # Cleaned, merged, and labeled datasets produced by src/data/
-```
-
-Each year folder contains the 28 CRSS CSV tables (e.g. `accident.csv`, `vehicle.csv`, `person.csv`, `weather.csv`, ...). Key tables:
-
-| File | Level | Notes |
-|---|---|---|
-| `accident.csv` | One row per crash | Within-year key: `CASENUM`; roadway/environmental fields |
-| `vehicle.csv` | One row per vehicle | Within-year key: `CASENUM`, `VEH_NO`; vehicle, towing, and damage fields |
-| `person.csv` | One row per person | Within-year key: `CASENUM`, `VEH_NO`, `PER_NO`; person and injury fields |
-
-When combining years, add `YEAR_FILE` using the year folder and include it in
-each key above. We add this column during preprocessing. Leave the raw files
-as downloaded.
-
-## Schemas and supplementary tables
-
-These reports use our downloaded files in `data/raw/<YEAR>/`:
-
-- [Schemas](../docs/crss_schema.md): column names and yearly changes for all 28 tables.
-- [Inventory](../docs/crss_inventory.csv): row counts, column counts, sizes, SHA-256 hashes, and source URLs for all 140 CSVs.
-
-The script reads local files only. It does not download from NHTSA or read our
-processed train, validation, and test tables. Source URLs show where the raw
-data came from. Hashes let us check that everyone has the same file contents,
-even if NHTSA later updates the downloads.
-
-CSV files do not specify data types. Use IDs as keys, code fields as categories,
-`*NAME` fields as text labels, and `WEIGHT` as a survey weight. A numeric code
-does not make a field a numeric measurement. The NHTSA manuals below explain
-the fields and codes. See [missing values and coding consistency](#missing-values-and-coding-consistency) for the audit and handling rules.
-
-The download includes the supplementary tables bundled in each main CSV archive:
-
-| Tables | Contents / potential use |
-|---|---|
-| `weather` | Additional crash weather records |
-| `cevent`, `vevent`, `vsoe`, `damage` | Crash/vehicle events and damage records |
-| `crashrf`, `driverrf`, `personrf`, `vehiclesf`, `pvehiclesf` | Related factors and circumstances |
-| `distract`, `drimpair`, `factor`, `maneuver`, `violatn`, `vision` | Driver/vehicle circumstances |
-| `nmcrash`, `nmdistract`, `nmimpair`, `nmprior`, `pbtype`, `safetyeq` | Nonmotorist circumstances, crash typing, and safety equipment |
-| `parkwork` | Parked/working vehicle records |
-| `vpicdecode`, `vpictrailerdecode` | Decoded vehicle and trailer information |
-
-The notebook currently uses `accident`, `vehicle`, and `person`. The other tables
-can have multiple rows per crash, vehicle, or person. Check their columns and
-the manual before joining them. We do not currently use or download NHTSA's
-separate **AuxiliaryCSV** archives.
-
-After downloading all five years, run this from the repository root to update
-both reports:
-
-```bash
-python src/data/document_raw.py
-```
-
-On macOS, use `python3` in place of `python`. The script checks that all 28 tables
-are present for each year and that each row has the expected number of columns.
-It leaves the data unchanged. The notebook checks duplicate keys and join
-coverage separately; see [crash-level joins](#crash-level-joins) and the
-[join report](../docs/crss_join_audit.csv).
-
-### Changes by year
-
-These are the column changes in our downloaded files. The schema report also
-lists changes in the other tables.
-
-| Year | Core-table changes from the previous year |
-|---|---|
-| 2020 | Baseline: accident has 80 columns, vehicle 167, and person 108. |
-| 2021 | Core-table column order changes. Vehicle drops `BDYTYP_IM` / `BDYTYP_IMNAME`, adds `UNDEROVERRIDE` / `UNDEROVERRIDENAME`, and changes `V_Config` / `V_ConfigNAME` to uppercase. |
-| 2022 | Person adds `DEVMOTOR`, `DEVMOTORNAME`, `DEVTYPE`, and `DEVTYPENAME` (112 columns). Vehicle returns to mixed-case `V_Config` / `V_ConfigNAME`. |
-| 2023 | Vehicle adds `ACC_CONFIG` / `ACC_CONFIGNAME` (169 columns). |
-| 2024 | Vehicle removes `ACC_CONFIG` / `ACC_CONFIGNAME` (167 columns) and returns to uppercase `V_CONFIG` / `V_CONFIGNAME`. |
-
-Accident column names stay the same across all five years. Load columns by name,
-not position. The notebook makes column names uppercase before combining years,
-so `V_Config` and `V_CONFIG` match. A missing column does not mean its values
-were zero. Code meanings can change even when column names stay the same; the audit below checks both.
+Download CRSS files locally into `data/raw/<YEAR>/` for 2020-2024. CSVs must sit
+directly in each year folder. Raw data, processed datasets, and fitted artifacts
+are excluded from git.
 
 ## Source
 
-Downloaded from NHTSA (CSV format):
-
-```text
-https://static.nhtsa.gov/nhtsa/downloads/CRSS/<YEAR>/CRSS<YEAR>CSV.zip
-```
-
-- [CRSS overview](https://www.nhtsa.gov/crash-data-systems/crash-report-sampling-system)
-- [NHTSA CRSS download directory](https://www.nhtsa.gov/file-downloads?p=nhtsa%2Fdownloads%2FCRSS%2F): year folders contain archives and release notes.
-- [Official CRSS manuals index](https://static.nhtsa.gov/nhtsa/downloads/CRSS/Links%20for%20CRSS%20Manuals.pdf): links to the Analytical User's Manual and coding manuals.
-- [2024 FARS/CRSS Coding and Validation Manual](https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813798): detailed coding definitions; consult the relevant year's documentation when interpreting earlier data.
-
-Crash counts (rows in `accident.csv`): 2020: 54,745 · 2021: 54,200 · 2022: 53,955 · 2023: 50,103 · 2024: 51,658.
+[NHTSA CRSS downloads](https://www.nhtsa.gov/file-downloads?p=nhtsa%2Fdownloads%2FCRSS%2F)
+provide the yearly archives. Use the [2016-2022 manual](https://rosap.ntl.bts.gov/view/dot/78235/dot_78235_DS1.pdf)
+and [2016-2024 manual](https://rosap.ntl.bts.gov/view/dot/89796/dot_89796_DS1.pdf)
+for field definitions and year-specific codes.
 
 ## Downloading the data
 
@@ -179,449 +83,279 @@ Both commands normalize filenames to lowercase, including the 2020 archive's
 
 ## Running preprocessing
 
-Open [`notebooks/Data Preprocessing.ipynb`](../notebooks/Data%20Preprocessing.ipynb)
-and run the cells in order. The working directory must be the repository's
-`notebooks/` directory. Running from the repository root is not supported;
-the setup cell raises an error if the working directory is incorrect.
-
-The notebook reads `accident.csv`, `vehicle.csv`, and `person.csv` from
-`data/raw/<YEAR>/` for 2020–2024. It writes `train.csv`, `validation.csv`, and
-`test.csv` to `data/processed/`. No personal download paths need to be edited.
-
-The [severity rules](#crash-severity-rules) explain label precedence and
-missing outcomes. The [training report](../docs/crss_severity_training.csv)
-lists 2020–2022 class counts and reasons. Run `python -m src.data.severity`
-from the repository root to regenerate that report and the
-[target counts](../docs/crss_target_counts.csv) and
-[target comparison](../docs/crss_target_comparison.csv), without reading holdout years.
-The comparison checks the combined labels against injury-only labels on the
-same training crashes.
-
-### Rebuilding the datasets
-
-After downloading the raw files, run from the repository root:
+Install the root `requirements.txt`, then run from the repository root:
 
 ```bash
 cd notebooks
 python build_data.py
+python prepare_features.py
 ```
 
-On macOS, use `python3 build_data.py`. Both this command and the notebook must
-run from `notebooks/`. They call the same preparation code in
-`src/data/preprocess.py`, so there is one set of loading, labeling, and splitting
-rules. The notebook calls these functions in separate cells for loading, join
-checks, severity labels, crash preparation, splits, and saving. This lets us
-inspect each stage before moving on. `build_data.py` runs the same steps in order.
-The final notebook step and the command replace the three local processed CSVs
-after validation.
-No model is trained and no imputer, encoder, or feature selection is fitted.
+Use `python3` on macOS. Both commands require `notebooks/` as the working
+directory. For individual steps, use [Data Preprocessing.ipynb](../notebooks/Data%20Preprocessing.ipynb)
+and [Feature Preprocessing.ipynb](../notebooks/Feature%20Preprocessing.ipynb).
+They call the same shared functions as the commands.
 
-| Output | Years | Rows |
+### Rebuilding the datasets
+
+`build_data.py` checks inputs, labels each crash, and replaces these local files:
+
+| File in `data/processed/` | Years | Rows |
 |---|---|---:|
-| `data/processed/train.csv` | 2020-2022 | 162,900 |
-| `data/processed/validation.csv` | 2023 | 50,103 |
-| `data/processed/test.csv` | 2024 | 51,658 |
+| `train.csv` | 2020-2022 | 162,900 |
+| `validation.csv` | 2023 | 50,103 |
+| `test.csv` | 2024 | 51,658 |
 
-Each file has 71 columns and one row per crash, sorted by `YEAR_FILE` and
-`CASENUM`. Together the three files contain the complete prepared crash table;
-we do not save another combined copy. The files retain `unknown` outcomes.
-The [processed schema](../docs/crss_processed_schema.csv) lists every column in
-output order, its storage type, source, role, and handling rule. Source field
-names also appear in the [raw schema](../docs/crss_schema.md); use the manuals
-for their definitions. Numeric storage does not make a code a continuous feature.
-
-These are prepared data tables, not an approved model input matrix. Vehicle
-and person records supply the severity label; their individual fields are not
-added as predictors in this build. Known injury-summary fields are removed,
-but retained crash fields such as `HARM_EV`, `ALCOHOL`, and NHTSA-imputed fields
-still require the predictor availability and leakage review. Do not feed every
-remaining column into a model. IDs, survey metadata, code labels, and the target
-also have separate roles in the schema.
-
-### Integrity and reproducibility
-
-The build checks raw keys, parent matches, and the reviewed year-specific codes
-before labeling. It then requires the exact output columns, valid severity
-labels, matching `YEAR` and `YEAR_FILE`, and the specified years in each split.
-It rejects duplicate crash keys, overlap between splits, lost or extra crashes,
-and changed values. It writes temporary CSVs and reloads them to check their
-contents before replacing the existing files. The
-[processed checks](../docs/crss_processed_checks.csv) record the successful split
-sizes without reporting holdout class distributions.
-
-`data/processed/manifest.json` records SHA-256 hashes of all 15 input CSVs,
-preparation source files, and the three outputs, plus Python and pandas versions.
-Inputs are hashed again before publishing the outputs to detect files changed
-during the build. Output order and CSV line endings are fixed. With the same
-inputs, code, and environment, repeated builds should produce matching output
-hashes. Compare the manifests when investigating a difference. Raw data,
-processed CSVs, and the local manifest stay out of git; commit the code and small
-schema/check reports.
-
-When reading these outputs, preserve literal `None` labels and use the schema:
-
-```python
-# From notebooks/, after the setup cell has added the repository to sys.path.
-import pandas as pd
-from src.data.preprocess import read_processed_csv
-
-schema = pd.read_csv("../docs/crss_processed_schema.csv")
-train = read_processed_csv("../data/processed/train.csv", schema)
-```
-
-Run `python -m unittest discover -s tests -v` from the repository root for the
-automated checks. The build also checks the actual downloaded data on every run.
-The DATA-01 inventory and DATA-04 code reports have their own commands above;
-the build updates the join report and training-only severity reports.
-
-## Missing values and coding consistency
-
-Run `python -m src.data.audit_codes` from the repository root (`python3` on
-macOS). This reads our local accident, vehicle, and person files for 2020-2024
-and writes four reports. It leaves raw and processed data unchanged.
-Supplementary tables need the same review before we use them as features.
-
-| Report | What it shows |
-|---|---|
-| [Missingness](../docs/crss_missingness.csv) | Blank cells, literal `None` labels, coded missingness flags, and absent columns by year and field. |
-| [Special codes](../docs/crss_special_codes.csv) | Observed codes whose labels mention unknown, not reported, or not applicable, with counts. |
-| [Coding changes](../docs/crss_coding_changes.csv) | Different labels for a code, conflicting labels within a year, and categories not observed every year. |
-| [Validation checks](../docs/crss_code_checks.csv) | Codes without labels and values outside the six reviewed field definitions. |
-
-These are compatibility checks across years. Do not use validation or test
-frequencies to choose features, missingness cutoffs, or preprocessing settings.
-Fit any imputer or encoder on training data only.
-
-### Findings and rules
-
-The work-zone labels were being read incorrectly. `WRK_ZONE = 0` has the valid
-label `None`, which pandas normally treats as missing. The shared reader now
-preserves that text, so the notebook no longer fills those labels manually.
-There are no blank `WRK_ZONENAME` cells in any of the five raw files.
-
-Only empty CSV cells become null when loading. The audit also counts whitespace-only
-cells as blank. Coded unknowns remain visible in the raw codes. Do not replace
-8, 9, 98, or 99 globally, and do not fill unknowns with zero. For example,
-`WEATHER = 8` means Other, while `LGT_COND = 8` means Not Reported. Work-zone
-code 4 means a work zone of unknown type; it still establishes a work zone.
-These field definitions come from the [CRSS 2016-2022 manual](https://rosap.ntl.bts.gov/view/dot/78235/dot_78235_DS1.pdf),
-printed pages 56-58.
-
-Towing and damage also change by year. The notebook checks these allowed codes
-before assigning labels:
-
-| Field | 2020-2021 | 2022-2024 |
-|---|---|---|
-| `TOWED` | 2, 3, 5, 7, 8, 9 | 5, 6, 8, 9 |
-| `DEFORMED` | 0, 2, 4, 6, 8, 9 | 0, 2, 4, 6, 7, 8, 9 |
-
-Towing code 6 replaces the earlier towing categories in 2022. Damage code 7
-is added for damage of unknown severity. Keep the existing severity rules;
-these checks establish which source codes are allowed in each year. See the
-[CRSS 2016-2024 manual](https://rosap.ntl.bts.gov/view/dot/89796/dot_89796_DS1.pdf),
-printed pages 138-139. The manual also documents the 2022 treatment of motorized
-bicycles as nonmotorists, so matching column names alone does not establish
-consistent vehicle or person definitions.
-
-`WRK_ZONE`, `LGT_COND`, `WEATHER`, `TOWED`, `DEFORMED`, and `INJ_SEV` have
-explicit allowed-code checks. All five years pass. Missing reviewed fields,
-unreviewed years, or invalid codes stop notebook loading. The audit writes its
-reports before raising for invalid codes. All observed nonblank codes with a
-paired `NAME` column have labels, and none has conflicting labels within a year.
-Other fields still need a manual definition review before feature selection;
-a matching label is not proof that a code has the same meaning across years.
-
-Keep these distinctions when preparing features:
-
-- Blank, unknown, not reported, and not applicable are separate conditions.
-  Decide how to encode each for the specific field after reviewing its manual.
-  Preserve partially known information rather than turning it into a blanket null.
-- An absent column is structural absence. The report marks `column_present=False`
-  and leaves missingness measures empty. For example, person `DEVMOTOR` and
-  `DEVTYPE` first appear in 2022. Do not interpret earlier absence as zero.
-- Column names are normalized to uppercase, and collisions stop loading.
-  This handles `V_Config` versus `V_CONFIG` without changing its values.
-- Do not impute IDs or target outcomes. Keep unresolved severity as `unknown`
-  and use the exclusion rules in the severity section below.
-
-The special-code flags are based on label wording, not a complete codebook
-mapping. `partly_unknown` flags other labels containing "unknown" for review;
-it does not guarantee that useful information remains. Empty coded-missingness
-measures mean no paired label column was available, not zero missingness.
-A changed label may be a wording change. A code missing in a year may simply
-not occur in that sample. The coding report omits absence-only flags for VINs,
-trailer VINs, driver ZIP codes, and motor-carrier IDs; their changing membership
-is expected. It still reports changed labels for those fields. No automatic
-recoding or category merging is based on these flags.
+Each has 71 columns, sorted by `YEAR_FILE`, `CASENUM`. The
+[processed schema](../docs/crss_processed_schema.csv) describes column roles;
+these tables are not an approved model input matrix. `manifest.json` records
+input, code, and output hashes and library versions. Saved CSVs are reloaded
+and checked before replacement. Read them with `read_processed_csv` from
+`src/data/preprocess.py` to preserve valid text such as `None`.
 
 ## Crash-level joins
 
-We keep one row per crash using `YEAR_FILE` and `CASENUM`. The notebook groups
-person and vehicle records by these keys before attaching severity to the
-accident table. This avoids multiplying rows when a crash has several vehicles
-or people.
-
-The shared checks are in `src/data/joins.py`. Run the preprocessing notebook
-from `notebooks/` to use them and update [the join report](../docs/crss_join_audit.csv).
-The report uses our local raw files and includes the final crash count by year.
-
-### Checks before joining
-
-- Accident keys: `YEAR_FILE`, `CASENUM`.
-- Vehicle keys: `YEAR_FILE`, `CASENUM`, `VEH_NO`.
-- Person keys: `YEAR_FILE`, `CASENUM`, `VEH_NO`, `PER_NO`.
-
-Missing or duplicate keys stop the notebook. Vehicle and person records must
-also have a matching accident. These checks run before grouping, so aggregation
-cannot hide duplicate input records.
-
-We check person-to-vehicle coverage using the vehicle key. People with
-`VEH_NO = 0` are counted separately because they have no vehicle link. Other
-unmatched vehicle keys are reported, not dropped. Every person still contributes
-to the summary for their crash. The report does not establish why a vehicle
-link is missing; check the source records and manuals before using those links
-for vehicle or driver features.
-
-### Checks during joining
-
-The summary joins use pandas' `one_to_one` validation. The final join starts
-from the accident table and keeps every original crash key. Duplicate summary
-keys, unexpected crash keys, overlapping columns, or changed crash counts stop
-the join. The notebook also compares the before/after counts for each year.
-
-The classifier starts with every accident key and attaches person and vehicle
-summaries. Crashes without people stay in the table with an `unknown` label.
-See [severity rules](#crash-severity-rules) for the labeling decisions.
-
-### Current data
-
-All five years pass the raw-key checks. Every crash has vehicle records.
-The report lists crashes without people and people without matching vehicles
-by year. These gaps are kept visible rather than removed by an inner join.
-
-The final table has 264,661 crashes: 162,900 from 2020–2022, 50,103 from 2023,
-and 51,658 from 2024. There are 81 crashes without person records.
-
-Run the focused tests from the repository root:
-
-```bash
-python -m unittest discover -s tests -p test_data_joins.py -v
-```
-
-On macOS, use `python3`. The tests cover repeated crash numbers across years,
-missing matches, duplicate or missing keys, and records without a parent crash.
+Use `YEAR_FILE` with `CASENUM` as the crash key; add `VEH_NO` for vehicles and
+`PER_NO` for people. Group vehicle/person records before joining to crashes.
+Missing or duplicate keys and records without a parent crash fail validation.
+One-to-one joins preserve every crash. People without matching vehicle records
+are reported and retained in crash summaries; `VEH_NO=0` has no vehicle link.
 
 ## Crash severity rules
 
-We assign one label per crash using all person and vehicle records. The rules
-are in `src/data/severity.py`. They are fixed rules, with no fitted thresholds.
-
-### Label order
+Apply these fixed rules in order using all people and vehicles in a crash:
 
 | Label | Rule |
 |---|---|
-| High | Any person has `INJ_SEV` 3 or 4 (serious or fatal injury). |
-| Moderate | No known high injury, and any person has injury code 1 or 2, any vehicle has `TOWED` 2, 3, 6, or 7, or any vehicle has `DEFORMED` 6. Requires at least one person record. |
-| Low | At least one person and vehicle record, every person has injury code 0, every vehicle has `TOWED` 5, and every vehicle has damage code 0, 2, or 4. |
-| Unknown | No person records, or the available outcomes do not meet any rule above. |
+| High | Any `INJ_SEV` is 3 or 4. |
+| Moderate | No known high injury, at least one person, and any `INJ_SEV` is 1 or 2, `TOWED` is 2, 3, 6, or 7, or `DEFORMED` is 6. |
+| Low | At least one person and vehicle; every injury is 0, every tow code is 5, and every damage code is 0, 2, or 4. |
+| Unknown | No person records or insufficient evidence for the other labels. |
 
-High takes precedence over moderate, and moderate over low. We keep the existing
-decision that towing for any reason counts as moderate, including code 3.
-Functional damage (code 4) alone can still be low.
+Known high or moderate evidence takes precedence over unresolved outcomes.
+Blanks and unknown codes never establish low severity. Injury codes 5, 6, and 9
+are unresolved; code 6 is death before the crash, not a crash fatality.
+Keep unknown labels in processed files and exclude them before modeling,
+reporting exclusions. Reasons and component outcomes are never predictors.
 
-### Why combine injury and vehicle outcomes?
+Moderate combines injury and vehicle disruption as the proposal's measure of
+crash consequences, not a clinical injury scale. Towing without disabling damage
+still qualifies. Because these outcomes are not equivalent, compare the primary
+target with injury-only severity: high for injury 3/4, moderate for 1/2, low only
+when all injuries are 0, otherwise unknown.
 
-The proposed target measures crash consequences: harm to people or disruption
-to the vehicle. Moderate groups non-serious injuries with towing or disabling
-damage because either can make a crash consequential without a known serious
-or fatal injury. This is our project definition, not a clinical injury scale.
+### Training comparison
 
-Those consequences are not equivalent. A vehicle can be towed without disabling
-damage, and towing alone does not establish bodily harm. In particular, `TOWED`
-3 explicitly means towing without disabling damage. We keep that choice in the
-proposed target so we can test it against a simpler injury-only definition,
-rather than assume the combined category is the better target.
+On 162,900 training crashes, 43,548 (26.7%) change labels under the injury-only
+definition. See [counts](../docs/crss_target_counts.csv) and the
+[comparison](../docs/crss_target_comparison.csv); pooled `all_training` rows
+must not be added to individual years. The primary target leaves 142,702 eligible
+training crashes; 140,373 have known labels under both definitions.
 
-### Injury-only alternative
+Use matching predictors, splits, and tuning budgets for both definitions.
+Compare on the shared eligible population and report each target's full eligible
+population separately. Higher scores alone do not establish a better target.
+Earlier notebook work viewed all five years; current rule-review reports use
+training only, but that earlier holdout exposure cannot be undone.
 
-The classifier also returns `INJURY_ONLY_SEVERITY` using all people in each crash:
+## Missing values and coding consistency
 
-| Label | Rule |
+Keep literal `None` work-zone labels; only empty CSV cells become null during
+loading. The audit also counts whitespace-only cells as blank. Never replace
+8/9/98/99 globally: codes are field-specific. Preserve partially known categories
+and distinguish missing columns from observed blank values.
+
+The loader checks `WRK_ZONE`, `LGT_COND`, `WEATHER`, `TOWED`, `DEFORMED`, and
+`INJ_SEV`. Towing codes change in 2022: 2/3/7 are replaced by 6; damage code 7
+is added. Column names are normalized to uppercase; collisions fail loading.
+Other fields require review before use. Special-code and changed-label reports
+are review flags, not instructions to automatically recode values. Identifier
+absence-only flags are omitted from the coding report.
+
+## Core and expanded feature sets
+
+The [feature catalog](../docs/crss_feature_sets.csv) is the detailed reference
+for sources, construction, missing codes, rationale, and availability.
+
+| Set | Features |
 |---|---|
-| High | Any injury code 3 or 4. |
-| Moderate | No known high injury, and any injury code 1 or 2. |
-| Low | At least one person, and every injury code is 0. |
-| Unknown | No people, or insufficient known injury information. |
+| Core categorical | `MONTH`, `DAY_WEEK`, `HOUR`, `TYP_INT`, `INT_HWY`, `LGT_COND`, `WEATHER` |
+| Core numeric | `VE_TOTAL`, `VEHICLE_AGE_MIN`, `VEHICLE_AGE_MAX` |
+| Expanded additions | `SPEEDING_ANY`, `DRINKING_ANY` (categorical); `DRIVER_AGE_MIN`, `DRIVER_AGE_MAX` (numeric) |
 
-The same evidence precedence applies: a known high or moderate injury takes
-priority over another person's unresolved injury. Vehicle outcomes have no effect
-on this label. Both labels are outcomes and must be excluded from predictors.
+The core set captures time, roadway, environment, and vehicle context. The
+expanded set tests the contribution of driver age and reported behavior.
+Only these allowlisted fields enter models. Exclude labels, injury/damage/towing
+outcomes, event reconstruction, sampling strata, IDs, weights, `*NAME` labels,
+and NHTSA-imputed fields. Unlisted fields need separate review.
 
-#### Training comparison
-
-These counts use the same 162,900 crashes from 2020–2022. Unknowns remain in the
-comparison so we can see which definition can label each crash.
-
-| Label | Combined | Injury-only |
-|---|---:|---:|
-| Low | 28,742 | 69,961 |
-| Moderate | 92,261 | 62,745 |
-| High | 21,699 | 21,699 |
-| Unknown | 20,198 | 8,495 |
-
-Rows below are combined labels; columns are injury-only labels.
-
-| Combined / injury-only | Low | Moderate | High | Unknown |
-|---|---:|---:|---:|---:|
-| Low | 28,742 | 0 | 0 | 0 |
-| Moderate | 27,187 | 62,745 | 0 | 2,329 |
-| High | 0 | 0 | 21,699 | 0 |
-| Unknown | 14,032 | 0 | 0 | 6,166 |
-
-43,548 crashes (26.7%) change labels. Of those, 27,187 move from combined
-moderate to injury-only low because towing or damage supplies the moderate
-evidence. Another 2,329 move from moderate to unknown because injury evidence
-alone is insufficient. The remaining 14,032 move from unknown to low because
-injuries are all known to be zero but vehicle outcomes do not establish low.
-High labels match exactly. This shows sensitivity to the definition, not which
-definition is more accurate.
-
-The [class-count report](../docs/crss_target_counts.csv) and
-[cross-tabulation](../docs/crss_target_comparison.csv) include each training year and
-the pooled training total (`all_training`). Do not add the pooled rows to the
-individual-year rows. `changed` marks off-diagonal label pairs; sum their `rows`
-within a scope to count changed labels.
-
-#### Later model comparison
-
-Keep the combined target as the proposed primary analysis and injury-only as
-the sensitivity analysis. Use the same chronological splits, predictor set,
-model families, and tuning budget for both. Fit preprocessing on training only.
-For the direct comparison, use crashes with known labels under both definitions:
-140,373 training crashes. Report results on each definition's full eligible
-population separately, including exclusion counts, because those populations
-differ. Do not use either target or its component outcomes as predictors.
-
-Report macro-F1, per-class metrics, high-severity recall, and confusion matrices
-for each definition. Scores describe different targets; a higher score does not
-establish a better severity definition. Use 2023 for model selection and reserve
-2024 for the fixed final analyses. No models have been compared in this step.
-
-### Missing and ambiguous outcomes
-
-Injury codes 5, 6, and 9 do not establish a low, moderate, or high injury level.
-Code 6 means death before the crash, so it is not a crash fatality. Tow codes
-8 and 9 and damage codes 7, 8, and 9 do not establish low outcomes either.
-Blank values and unexpected codes are also unresolved.
-
-A known serious or fatal injury still makes a crash high when another outcome
-is unknown. A known moderate outcome still makes it moderate when other
-outcomes are unknown. That is a project convention based on observed evidence;
-it does not prove an unknown injury was less serious. Low requires every outcome
-to be known and meet the low rule.
-
-We keep crashes without people as unknown, even if towing or damage is recorded.
-This preserves the notebook's existing conservative choice for those records.
-Without vehicle records, a known injury can establish high or moderate, but a
-crash cannot be low. Missing vehicle matches never count as evidence of towing.
-
-Each label has one `SEVERITY_REASON`. If several rules apply, the reason order
-is serious/fatal injury, minor/possible injury, towing, then disabling damage.
-Unknown reasons distinguish no people, no vehicles, and unresolved outcomes.
-If both tables are missing, the reason is `no_person_records`.
-These reasons explain the decision; they are not model features.
-
-### Training review
-
-This review uses the 2020–2022 raw files. Code/name pairs in those files were
-checked against the existing mapping. See the [NHTSA manuals](README.md#source)
-for field definitions. The code lists and precedence above are fixed before
-applying this implementation to validation or test years. Do not change the
-rules based on holdout distributions or model performance.
-
-The earlier notebook inspected codes and outcomes across all five years.
-That exposure cannot be undone, so we cannot claim the original rule design
-was completely independent of the holdout data. This update removes those
-pooled outcome inspections and restricts the rule-review report to training.
-
-| Training label | Crashes |
-|---|---:|
-| Low | 28,742 |
-| Moderate | 92,261 |
-| High | 21,699 |
-| Unknown | 20,198 |
-| Total | 162,900 |
-
-The [training report](../docs/crss_severity_training.csv) breaks these counts down by
-year and reason. Fractions use every crash in that year, including unknowns.
-Exclude the 20,198 unknown training rows when fitting the three-class model;
-142,702 training crashes remain. Keep unknowns in the processed files so we can
-report exclusions for each split. Report holdout label counts during evaluation,
-after the rules are fixed.
-
-From the repository root, regenerate all three training reports with:
-
-```bash
-python -m src.data.severity
-```
-
-This command reads only 2020–2022 and leaves the raw and processed CSVs unchanged.
-The reporting functions reject validation or test rows. The notebook applies
-the same classifier to every year and currently saves only the primary
-`SEVERITY` with the crash table. The alternative label is available in the
-classifier output for the later model comparison; reasons are kept out of the
-processed feature table.
-
-Run the tests from the repository root:
-
-```bash
-python -m unittest discover -s tests -v
-```
-
-On macOS, use `python3`. Tests cover precedence, multiple people and vehicles,
-all listed unknown codes, blanks, unexpected codes, and missing records.
+Aggregate vehicles once each and identify drivers using `PER_TYP=1`, not
+`PER_NO=1`. Keep unmatched drivers in crash summaries and never select records
+by severity. Age ranges summarize known values only. Vehicle ages cover the
+vehicle table; `VE_TOTAL` also includes parked/working vehicles. The model-year
+range 1886 through crash year plus one is our validation rule. Behavior flags
+are positive if any recorded value is positive, negative only for nonempty
+all-negative groups, and otherwise missing. Missing drivers never drop a crash.
 
 ## Predictor availability
 
-Our goal is crash-severity prediction, with classification models predicting
-the severity category. The current analysis uses completed CRSS records and
-does not yet establish prediction before the outcome is known. A variable can avoid directly giving
-away the label and still be unavailable when a real-time prediction is needed.
+This is conditional severity prediction among reported crashes using completed
+records, as described in the [proposal](../reports/proposal/crss_crash_severity_proposal.pdf).
+Core fields do not have verified live availability. Reported speeding and drinking
+are retrospective-only additions: investigation and reporting may depend on
+severity. Better expanded scores do not establish pre-crash prediction or
+causation. Earlier prediction would require a defined prediction time and
+verified input availability. Both target definitions use the same exclusions.
 
-Before building features, review every candidate field and record:
+## Reusable feature preprocessing
 
-| Field to document | What we need |
+`prepare_features.py` constructs training and validation features, checks their
+source hashes against the data manifest, and excludes unknown targets. It does
+not read 2024 data or train a model. Rebuild data if hashes differ.
+
+| Input | Treatment |
 |---|---|
-| Variable and source | Exact column, table, years, and manual reference. |
-| Meaning | What the variable measures and how it is recorded. |
-| Availability | When an operator could actually obtain it: before the crash, at initial reporting, after investigation, or unresolved. |
-| Outcome relationship | Whether it defines the target, reveals the outcome, or may be inferred from the outcome during investigation. |
-| Decision | Include in retrospective analysis, exclude, or leave pending, with a reason. |
+| Categorical | Fill missing with -1 and one-hot encode training categories. |
+| Numeric | Fill with training median and standardize; all-empty training columns stay present with zero fallback. |
+| Unseen category | All-zero block for that field, with unchanged column order. |
 
-This is the review requirement, not a completed field-by-field audit. The final
-predictor list has not been approved. Pending fields stay out until reviewed.
+`make_preprocessor("core")` or `make_preprocessor("expanded")` returns a
+scikit-learn pipeline. Keep `YEAR_FILE` in the input: fitting rejects years
+outside 2020-2022, then drops metadata. Use `transform` on later years.
+`scale_numeric=False` skips scaling for tree models. Fit separately inside each
+training fold if cross-validation is used. Never fit on holdouts.
 
-### Rules for the feature review
+Each folder in `data/processed/features/{core,expanded}/` contains:
 
-Exclude injury, damage, towing, airbag deployment, both severity labels, label
-reasons, and other outcome-derived fields from both target comparisons. Changing
-to injury-only labels does not make vehicle outcomes acceptable predictors for
-this comparison. Keep IDs and survey-design fields out of predictors; use
-`WEIGHT` only if the analysis calls for sample weighting.
+| Files | Contents |
+|---|---|
+| `train.npz`, `validation.npz` | Sparse matrices; load with `scipy.sparse.load_npz`. |
+| `train_rows.csv`, `validation_rows.csv` | Matching crash keys and labels in matrix row order. |
+| `columns.csv` | Encoded column names in order. |
+| `preprocessor.joblib` | Fitted pipeline; load with `joblib.load`. |
+| `metadata.json` | Exclusion counts, configuration, versions, and hashes. |
 
-Driver behavior, impairment, and other findings from an investigation need an
-explicit availability review. Do not assume that describing a pre-crash action
-means the information was recorded or available before the outcome. Review
-roadway, environmental, and vehicle fields too; membership in the core feature
-group does not establish availability.
+Rerunning replaces these local artifacts. Core and expanded use the same eligible
+rows; their encoded widths may differ. Missing predictors do not remove rows.
 
-For a retrospective model, an investigation-derived field may be considered
-only after checking how it was recorded and whether the outcome influenced its
-coding. Document that limitation. For any future model claiming earlier
-prediction, first define the exact prediction time and inputs available then.
-Only admit fields with evidence that they are available by that time. An
-unresolved availability claim is not enough.
+## Majority-class baseline
 
-Use the [NHTSA manuals](README.md#source) for the review. Fit data-driven
-feature choices on training data only. Keep the reviewed predictor set the
-same for the combined and injury-only target comparison.
+After preparing features, run `python run_majority_baseline.py` from `notebooks/`,
+or use [Majority Baseline.ipynb](../notebooks/Majority%20Baseline.ipynb).
+`DummyClassifier(strategy="most_frequent")` learns the unweighted majority label
+from 2020?2022 and evaluates both feature sets on the same eligible 2023 crashes.
+It does not read the 2024 test set. Ties follow scikit-learn's sorted class order.
+
+[Results](../results/majority_baseline/metrics.csv) include accuracy, macro-F1,
+per-class scores, and confusion counts. Macro-F1 averages low, moderate, and high;
+undefined scores are zero. `run.json` records input/code hashes and exclusions.
+Crash-level predictions stay in `data/processed/predictions/majority_baseline/`.
+Rerunning replaces these outputs.
+
+Both sets predict moderate: validation accuracy is 64.89%, macro-F1 is 0.2624,
+and high-severity recall is 0. This is the minimum benchmark for later models.
+
+## Logistic Regression
+
+Run `python run_logistic_regression.py` from `notebooks/` after preparing features,
+or use [Logistic Regression.ipynb](../notebooks/Logistic%20Regression.ipynb).
+Both configurations reuse training-fitted preprocessing and train on 2020?2022.
+Fixed settings: multinomial loss, `lbfgs`, L2 (`l1_ratio=0`), `C=1`, no class
+weighting, `max_iter=1000`, `tol=1e-4`, and seed 42. Nonconvergence stops the run.
+Use the tuning workflow below to compare regularization and class weights.
+
+[Validation metrics](../results/logistic_regression/metrics.csv), per-class scores,
+confusion counts, and run settings are saved in `results/logistic_regression/`.
+Predictions, class probabilities, and fitted pipelines stay local in
+`data/processed/predictions/logistic_regression/`. Pipelines accept the crash-level
+feature table from `build_feature_table`, including `YEAR_FILE`, and apply the
+saved preprocessing before prediction. The run does not read 2024 data.
+
+## Baseline tuning
+
+Run `python tune_baselines.py` from `notebooks/`, or use
+[Baseline Tuning.ipynb](../notebooks/Baseline%20Tuning.ipynb).
+The fixed grid is `C=[0.01, 0.1, 1, 10, 100]` with unweighted and balanced classes
+for both feature sets. Balanced weights use training-label frequencies only.
+All other settings and prepared features match the fixed Logistic Regression run.
+
+Select the highest 2023 macro-F1 per feature set and the overall Logistic Regression
+winner. Exact ties favor smaller C, then unweighted, then core. Report accuracy and
+high-severity recall alongside macro-F1; neither breaks ties. Selected models stay
+fitted on 2020?2022, and the workflow does not load or evaluate 2024 data.
+
+[Candidate scores](../results/baseline_tuning/candidates.csv) cover all 20 fits.
+The same folder contains candidate per-class/confusion reports, selected-model
+metrics, the majority-baseline comparison, and search settings in `run.json`.
+Selected pipelines and validation predictions stay local under
+`data/processed/predictions/baseline_tuning/`. These validation scores were used
+for selection; final performance still requires the held-out test evaluation.
+
+## Baseline handoff
+
+After running the majority baseline, fixed Logistic Regression, and tuning,
+run `python export_baselines.py` from `notebooks/`, or use
+[Baseline Handoff.ipynb](../notebooks/Baseline%20Handoff.ipynb).
+Share `data/processed/baseline_handoff.zip` with Payton alongside this repository.
+CSV + JSON is the proposed exchange format; recipient confirmation is still pending.
+The archive and unpacked copy stay local; small summary files are tracked in
+`results/baseline_handoff/`. Rerunning replaces the export without retraining.
+
+| File | Contents |
+|---|---|
+| `predictions.csv` | One row per model and crash: `model_id`, `YEAR_FILE`, `CASENUM`, `y_true`, `y_pred`, `p_low`, `p_moderate`, `p_high`. |
+| `labels.csv` | Label strings and their probability columns. No integer label encoding. |
+| `metrics.csv`, `per_class.csv`, `confusion.csv` | Scores per model, class scores, and actual/predicted confusion counts. |
+| `configurations.json` | Estimator parameters, feature set, exclusions, selection flags, and search rules. |
+| `source_runs.json`, `manifest.json` | Original run metadata and export file hashes. |
+
+Join on `YEAR_FILE` + `CASENUM`; include `model_id` when checking export uniqueness.
+There are six runs: majority, fixed Logistic Regression, and tuned Logistic
+Regression for core and expanded. `baseline_tuning_expanded` is the selected
+Logistic Regression winner. Probabilities follow the named columns, not an
+estimator's internal class order. The majority model assigns probability 1 to
+its constant prediction; these probabilities are not calibrated risk estimates.
+
+All runs use 142,702 training and 42,156 validation crashes after excluding
+20,198 and 7,947 unknown targets, respectively. Target rules and feature
+engineering are defined above and in the [feature catalog](../docs/crss_feature_sets.csv).
+Metrics are unweighted and macro-F1 includes all three labels. The exporter checks
+hashes, aligned crash keys and true labels, probabilities, and recomputed metrics.
+It does not read 2024 data.
+
+| Model | Accuracy | Macro-F1 | High recall |
+|---|---:|---:|---:|
+| Majority, either set | 64.89% | 0.2624 | 0.00% |
+| Fixed Logistic Regression, core | 64.84% | 0.2696 | 1.06% |
+| Fixed Logistic Regression, expanded | 64.84% | 0.2861 | 3.35% |
+| Tuned Logistic Regression, core | 34.58% | 0.3442 | 52.17% |
+| Tuned Logistic Regression, expanded | 39.37% | 0.3896 | 52.72% |
+
+Balanced weights improve macro-F1 and high-severity recall at the cost of accuracy.
+These are primary-target validation results used for model selection. The injury-only
+comparison and final 2024 evaluation remain separate work. Expanded features include
+retrospective driver information, so these results do not establish pre-crash prediction.
+
+## Reports and checks
+
+Reports describe local raw files unless marked as processed or training-only.
+
+| Reports | Contents |
+|---|---|
+| [Raw schema](../docs/crss_schema.md), [inventory](../docs/crss_inventory.csv) | All 28 tables across five years; columns, file sizes, hashes, and source URLs. |
+| [Join audit](../docs/crss_join_audit.csv) | Key coverage and crash counts. |
+| [Missingness](../docs/crss_missingness.csv), [special codes](../docs/crss_special_codes.csv), [coding changes](../docs/crss_coding_changes.csv), [code checks](../docs/crss_code_checks.csv) | Blanks, coded missingness, structural changes, and validation flags. |
+| [Training severity](../docs/crss_severity_training.csv), [target counts](../docs/crss_target_counts.csv), [target comparison](../docs/crss_target_comparison.csv) | Training-only label review. |
+| [Processed schema](../docs/crss_processed_schema.csv), [processed checks](../docs/crss_processed_checks.csv) | Output columns and split integrity. |
+
+Run these from the repository root as needed:
+
+```bash
+python src/data/document_raw.py
+python -m src.data.audit_codes
+python -m src.data.severity
+python -m unittest discover -s tests -v
+```
+
+Supplementary tables need review before joining. Use holdout audits only for
+compatibility checks, not feature selection or fitted preprocessing decisions.

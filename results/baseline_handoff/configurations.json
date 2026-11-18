@@ -1,0 +1,229 @@
+{
+  "evaluation_year": 2023,
+  "fit_years": [
+    2020,
+    2021,
+    2022
+  ],
+  "labels": [
+    "low",
+    "moderate",
+    "high"
+  ],
+  "models": [
+    {
+      "configuration": "core",
+      "estimator": "DummyClassifier",
+      "exclusions": {
+        "train": {
+          "eligible_rows": 142702,
+          "excluded_unknown": 20198,
+          "input_rows": 162900
+        },
+        "validation": {
+          "eligible_rows": 42156,
+          "excluded_unknown": 7947,
+          "input_rows": 50103
+        }
+      },
+      "model_id": "majority_baseline_core",
+      "overall_logistic_winner": false,
+      "parameters": {
+        "strategy": "most_frequent"
+      },
+      "selected_per_feature_set": false
+    },
+    {
+      "configuration": "expanded",
+      "estimator": "DummyClassifier",
+      "exclusions": {
+        "train": {
+          "eligible_rows": 142702,
+          "excluded_unknown": 20198,
+          "input_rows": 162900
+        },
+        "validation": {
+          "eligible_rows": 42156,
+          "excluded_unknown": 7947,
+          "input_rows": 50103
+        }
+      },
+      "model_id": "majority_baseline_expanded",
+      "overall_logistic_winner": false,
+      "parameters": {
+        "strategy": "most_frequent"
+      },
+      "selected_per_feature_set": false
+    },
+    {
+      "configuration": "core",
+      "estimator": "LogisticRegression",
+      "exclusions": {
+        "train": {
+          "eligible_rows": 142702,
+          "excluded_unknown": 20198,
+          "input_rows": 162900
+        },
+        "validation": {
+          "eligible_rows": 42156,
+          "excluded_unknown": 7947,
+          "input_rows": 50103
+        }
+      },
+      "model_id": "logistic_regression_core",
+      "overall_logistic_winner": false,
+      "parameters": {
+        "C": 1.0,
+        "class_weight": null,
+        "dual": false,
+        "fit_intercept": true,
+        "intercept_scaling": 1,
+        "l1_ratio": 0.0,
+        "max_iter": 1000,
+        "n_jobs": null,
+        "penalty": "deprecated",
+        "random_state": 42,
+        "solver": "lbfgs",
+        "tol": 0.0001,
+        "verbose": 0,
+        "warm_start": false
+      },
+      "selected_per_feature_set": false
+    },
+    {
+      "configuration": "expanded",
+      "estimator": "LogisticRegression",
+      "exclusions": {
+        "train": {
+          "eligible_rows": 142702,
+          "excluded_unknown": 20198,
+          "input_rows": 162900
+        },
+        "validation": {
+          "eligible_rows": 42156,
+          "excluded_unknown": 7947,
+          "input_rows": 50103
+        }
+      },
+      "model_id": "logistic_regression_expanded",
+      "overall_logistic_winner": false,
+      "parameters": {
+        "C": 1.0,
+        "class_weight": null,
+        "dual": false,
+        "fit_intercept": true,
+        "intercept_scaling": 1,
+        "l1_ratio": 0.0,
+        "max_iter": 1000,
+        "n_jobs": null,
+        "penalty": "deprecated",
+        "random_state": 42,
+        "solver": "lbfgs",
+        "tol": 0.0001,
+        "verbose": 0,
+        "warm_start": false
+      },
+      "selected_per_feature_set": false
+    },
+    {
+      "configuration": "core",
+      "estimator": "LogisticRegression",
+      "exclusions": {
+        "train": {
+          "eligible_rows": 142702,
+          "excluded_unknown": 20198,
+          "input_rows": 162900
+        },
+        "validation": {
+          "eligible_rows": 42156,
+          "excluded_unknown": 7947,
+          "input_rows": 50103
+        }
+      },
+      "model_id": "baseline_tuning_core",
+      "overall_logistic_winner": false,
+      "parameters": {
+        "C": 0.01,
+        "class_weight": "balanced",
+        "dual": false,
+        "fit_intercept": true,
+        "intercept_scaling": 1,
+        "l1_ratio": 0.0,
+        "max_iter": 1000,
+        "n_jobs": null,
+        "penalty": "deprecated",
+        "random_state": 42,
+        "solver": "lbfgs",
+        "tol": 0.0001,
+        "verbose": 0,
+        "warm_start": false
+      },
+      "selected_per_feature_set": true
+    },
+    {
+      "configuration": "expanded",
+      "estimator": "LogisticRegression",
+      "exclusions": {
+        "train": {
+          "eligible_rows": 142702,
+          "excluded_unknown": 20198,
+          "input_rows": 162900
+        },
+        "validation": {
+          "eligible_rows": 42156,
+          "excluded_unknown": 7947,
+          "input_rows": 50103
+        }
+      },
+      "model_id": "baseline_tuning_expanded",
+      "overall_logistic_winner": true,
+      "parameters": {
+        "C": 1.0,
+        "class_weight": "balanced",
+        "dual": false,
+        "fit_intercept": true,
+        "intercept_scaling": 1,
+        "l1_ratio": 0.0,
+        "max_iter": 1000,
+        "n_jobs": null,
+        "penalty": "deprecated",
+        "random_state": 42,
+        "solver": "lbfgs",
+        "tol": 0.0001,
+        "verbose": 0,
+        "warm_start": false
+      },
+      "selected_per_feature_set": true
+    }
+  ],
+  "refit_on_validation": false,
+  "schema_version": 1,
+  "search": {
+    "C": [
+      0.01,
+      0.1,
+      1.0,
+      10.0,
+      100.0
+    ],
+    "class_weight": [
+      null,
+      "balanced"
+    ],
+    "refit_on_validation": false,
+    "selection_rule": "Highest validation macro-F1; exact ties use smaller C, then unweighted, then core.",
+    "winner": {
+      "C": 1.0,
+      "accuracy": 0.3936568934434007,
+      "class_weight": "balanced",
+      "configuration": "expanded",
+      "high_severity_recall": 0.527245283018868,
+      "iterations": 116,
+      "macro_f1": 0.3896378250108284,
+      "train_rows": 142702,
+      "validation_rows": 42156
+    }
+  },
+  "selection_metric": "macro_f1",
+  "target": "SEVERITY"
+}

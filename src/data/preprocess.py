@@ -1,4 +1,3 @@
-"""Rebuild crash-level preparation tables with fixed chronological splits."""
 
 import hashlib
 import json

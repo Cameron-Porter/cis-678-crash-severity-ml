@@ -1,4 +1,3 @@
-"""Small cases for joins that could otherwise lose or multiply records."""
 
 import unittest
 

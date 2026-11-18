@@ -1,0 +1,96 @@
+{
+  "evaluation_year": 2023,
+  "exclusions": {
+    "core": {
+      "train": {
+        "eligible_rows": 142702,
+        "excluded_unknown": 20198,
+        "input_rows": 162900
+      },
+      "validation": {
+        "eligible_rows": 42156,
+        "excluded_unknown": 7947,
+        "input_rows": 50103
+      }
+    },
+    "expanded": {
+      "train": {
+        "eligible_rows": 142702,
+        "excluded_unknown": 20198,
+        "input_rows": 162900
+      },
+      "validation": {
+        "eligible_rows": 42156,
+        "excluded_unknown": 7947,
+        "input_rows": 50103
+      }
+    }
+  },
+  "feature_metadata_sha256": {
+    "core": "557b533b7a739efdbb6e4f5833249a238f1f62bbbdeec5b3e1ca3d2d82c1096c",
+    "expanded": "050cd9e961c29608aa7af4c2668ddfa53d47dab64b1877b737bb6d583a48d7d3"
+  },
+  "fit_years": [
+    2020,
+    2021,
+    2022
+  ],
+  "labels": [
+    "low",
+    "moderate",
+    "high"
+  ],
+  "model": "LogisticRegression",
+  "parameters": {
+    "core": {
+      "C": 1.0,
+      "class_weight": null,
+      "dual": false,
+      "fit_intercept": true,
+      "intercept_scaling": 1,
+      "l1_ratio": 0.0,
+      "max_iter": 1000,
+      "n_jobs": null,
+      "penalty": "deprecated",
+      "random_state": 42,
+      "solver": "lbfgs",
+      "tol": 0.0001,
+      "verbose": 0,
+      "warm_start": false
+    },
+    "expanded": {
+      "C": 1.0,
+      "class_weight": null,
+      "dual": false,
+      "fit_intercept": true,
+      "intercept_scaling": 1,
+      "l1_ratio": 0.0,
+      "max_iter": 1000,
+      "n_jobs": null,
+      "penalty": "deprecated",
+      "random_state": 42,
+      "solver": "lbfgs",
+      "tol": 0.0001,
+      "verbose": 0,
+      "warm_start": false
+    }
+  },
+  "prediction_hashes": {
+    "data/processed/predictions/logistic_regression/core_validation.csv": "2843dbd17538d9b6f5b0596591bb6f7714596b1cabb4ab00ca9ece596dd68bc7",
+    "data/processed/predictions/logistic_regression/expanded_validation.csv": "c1bd48f3a0219a6fbeaec2bdbfffda64e9683c110b75812151f79d24471b6614"
+  },
+  "sample_weight": null,
+  "source_hashes": {
+    "src/evaluation/evaluate.py": "c02e94439b75a1435ba40d90c399e3a17cd1e710f3326b19187479577441de17",
+    "src/models/data.py": "dbd50587005efe55d0f0810623ab874f38bd31d0f126fc8eec69fe132b570706",
+    "src/models/logistic_regression.py": "d643e9f23efac0cfda4af8453a4a644df638005f84f32f20e1b2c3448d58de57"
+  },
+  "versions": {
+    "numpy": "2.5.3",
+    "pandas": "3.0.6",
+    "python": "3.14.5",
+    "scipy": "1.18.1",
+    "sklearn": "1.9.1"
+  },
+  "zero_division": 0
+}
