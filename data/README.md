@@ -255,6 +255,22 @@ Rerunning replaces these outputs.
 Both sets predict moderate: validation accuracy is 64.89%, macro-F1 is 0.2624,
 and high-severity recall is 0. This is the minimum benchmark for later models.
 
+## Logistic Regression
+
+Run `python run_logistic_regression.py` from `notebooks/` after preparing features,
+or use [Logistic Regression.ipynb](../notebooks/Logistic%20Regression.ipynb).
+Both configurations reuse training-fitted preprocessing and train on 2020?2022.
+Fixed settings: multinomial loss, `lbfgs`, L2 (`l1_ratio=0`), `C=1`, no class
+weighting, `max_iter=1000`, `tol=1e-4`, and seed 42. Nonconvergence stops the run.
+Regularization and class-weight tuning are reserved for BASE-05.
+
+[Validation metrics](../results/logistic_regression/metrics.csv), per-class scores,
+confusion counts, and run settings are saved in `results/logistic_regression/`.
+Predictions, class probabilities, and fitted pipelines stay local in
+`data/processed/predictions/logistic_regression/`. Pipelines accept the crash-level
+feature table from `build_feature_table`, including `YEAR_FILE`, and apply the
+saved preprocessing before prediction. The run does not read 2024 data.
+
 ## Reports and checks
 
 Reports describe local raw files unless marked as processed or training-only.
